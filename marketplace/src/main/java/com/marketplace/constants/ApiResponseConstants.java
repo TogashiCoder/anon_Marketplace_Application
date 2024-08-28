@@ -2,6 +2,8 @@ package com.marketplace.constants;
 
 public class ApiResponseConstants {
 
+    private ApiResponseConstants() {}
+
     // HTTP Status Codes
     public static final String STATUS_201 = "201";
     public static final String STATUS_200 = "200";

@@ -1,28 +1,31 @@
 package com.marketplace.model;
 
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Setter @Getter
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-public class ShoppingCart {
+public class CouponUsage {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
+
+    @ManyToOne
     @JoinColumn(name = "buyer_id")
     private Buyer buyer;
 
-    @OneToMany(mappedBy = "shoppingCart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> items;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 
-    private Boolean isActive;
-
+    private boolean used;
 }

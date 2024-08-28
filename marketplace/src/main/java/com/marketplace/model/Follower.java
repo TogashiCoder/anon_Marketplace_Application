@@ -6,23 +6,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Setter @Getter
 @AllArgsConstructor @NoArgsConstructor
 @Entity
-public class ShoppingCart {
+public class Follower {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
-
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "buyer_id")
     private Buyer buyer;
 
-    @OneToMany(mappedBy = "shoppingCart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> items;
-
-    private Boolean isActive;
-
+    @ManyToOne
+    @JoinColumn(name = "seller_id")
+    private Seller seller;
 }
