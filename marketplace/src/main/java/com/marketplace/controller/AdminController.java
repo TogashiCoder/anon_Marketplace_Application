@@ -2,8 +2,10 @@ package com.marketplace.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marketplace.dto.AdminDto;
 import com.marketplace.dto.BuyerDto;
-import com.marketplace.service.IBuyerService;
+import com.marketplace.model.Admin;
+import com.marketplace.service.IAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,35 +17,31 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/buyers")
-public class BuyerController {
+@RequestMapping("/api/admins")
+public class AdminController {
 
     @Autowired
-    private IBuyerService buyerService;
-
-
-
+    private IAdminService adminService;
 
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> registerBuyer(
-            @RequestPart("buyer") String buyerJson,
+    public ResponseEntity<?> registerAdmin(
+            @RequestPart("admin") String buyerJson,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            BuyerDto buyerDTO = mapper.readValue(buyerJson, BuyerDto.class);
+            AdminDto adminDto = mapper.readValue(buyerJson, AdminDto.class);
 
-            // Register the buyer and get the response DTO
-            ResponseEntity<BuyerDto> response = buyerService.registerBuyer(buyerDTO, profileImage);
+            // Register the admin and get the response DTO
+            ResponseEntity<AdminDto> response = adminService.registerAdmin(adminDto, profileImage);
             return response;
 
         } catch (JsonProcessingException e) {
-            return ResponseEntity.badRequest().body("Error parsing buyer JSON: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error parsing admin JSON: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error registering buyer: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error registering admin: " + e.getMessage());
         }
     }
-
 
 
 }

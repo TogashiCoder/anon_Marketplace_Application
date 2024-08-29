@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "Character")
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "appUser")
 public class User {
     @Id
@@ -34,7 +36,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
     @CreatedDate
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
     @LastModifiedDate
     @Column(insertable = false)

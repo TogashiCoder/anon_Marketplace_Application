@@ -1,15 +1,20 @@
 package com.marketplace.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
 @DiscriminatorValue("SELLER")
 public class Seller extends User {
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "shopCoverImage_Id")
+    private Image shopCoverImage;
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
