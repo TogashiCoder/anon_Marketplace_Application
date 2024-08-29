@@ -23,8 +23,6 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private Seller seller;
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Tag> tags;
     private Integer minimumOrderQuantity;
     @CreatedDate
     @Column(updatable = false)
@@ -51,7 +49,6 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "promotion_id")
     private Promotion promotion;
-
 
     @ManyToOne
     @JoinColumn(name = "coupon_id")

@@ -40,9 +40,12 @@ public class User {
     @Column(insertable = false)
     private LocalDateTime updatedAt;
     private LocalDateTime suspendedAt;
-    @Embedded
-    private Address address;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "profileImage_Id")
     private Image profileImage;
+    private String street;
+    private String city;
+    private String state;
+    private String zipcode;
+    private String country;
 }
