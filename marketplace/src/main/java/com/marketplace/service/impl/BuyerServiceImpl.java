@@ -36,6 +36,7 @@ public class BuyerServiceImpl implements IBuyerService {
 
 
     public ResponseEntity<BuyerDto> registerBuyer(BuyerDto dto, MultipartFile profileImage) {
+
         // Convert DTO to entity
         Buyer buyer = buyerMapper.toEntity(dto);
         buyer.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -43,7 +44,14 @@ public class BuyerServiceImpl implements IBuyerService {
         // Handle profile image upload
         if (profileImage != null && !profileImage.isEmpty()) {
             FileUploadUtil.assertAllowed(profileImage, FileUploadUtil.IMAGE_PATTERN);
-            String fileName = FileUploadUtil.getFileName(profileImage.getOriginalFilename());
+
+            // Extract the base name and extension from the original file name
+            String originalFileName = profileImage.getOriginalFilename();
+            String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "profile";
+            String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "png";
+
+            String fileName = FileUploadUtil.getFileName(baseName, extension);
+
             CloudinaryResponse response = cloudinaryService.uploadFile(profileImage, fileName, "image");
             Image image = new Image();
             image.setImageUrl(response.getUrl());
@@ -56,16 +64,16 @@ public class BuyerServiceImpl implements IBuyerService {
         buyer.setRole(Role.BUYER);
         Buyer savedBuyer = buyerRepository.save(buyer);
 
-
         // Convert saved entity to DTO
         BuyerDto savedBuyerDto = buyerMapper.toDTO(savedBuyer);
-        savedBuyerDto.setProfileImage(savedBuyer.getProfileImage().getImageUrl());
+        savedBuyerDto.setProfileImage(savedBuyer.getProfileImage() != null ? savedBuyer.getProfileImage().getImageUrl() : null);
         savedBuyerDto.setCreatedAt(savedBuyer.getCreatedAt());
-        savedBuyerDto.setUpdatedAt(null);
-        savedBuyerDto.setSuspendedAt(null);
-
+        savedBuyerDto.setUpdatedAt(savedBuyer.getUpdatedAt());
+        savedBuyerDto.setSuspendedAt(savedBuyer.getSuspendedAt());
 
         return ResponseEntity.ok(savedBuyerDto);
     }
+
+
 
 }

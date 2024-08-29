@@ -31,15 +31,22 @@ public class SellerServiceImpl implements ISellerService {
     @Override
     @Transactional
     public ResponseEntity<SellerDto> registerSeller(SellerDto dto, MultipartFile profileImage, MultipartFile shopCoverImage) {
+
         // Convert DTO to entity
         Seller seller = sellerMapper.toEntity(dto);
-        System.out.println(seller);
         seller.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         // Handle profile image upload
         if (profileImage != null && !profileImage.isEmpty()) {
             FileUploadUtil.assertAllowed(profileImage, FileUploadUtil.IMAGE_PATTERN);
-            String fileName = FileUploadUtil.getFileName(profileImage.getOriginalFilename());
+
+            // Extract the base name and extension from the original file name
+            String originalFileName = profileImage.getOriginalFilename();
+            String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "profile";
+            String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "png";
+
+            String fileName = FileUploadUtil.getFileName(baseName, extension);
+
             CloudinaryResponse response = cloudinaryService.uploadFile(profileImage, fileName, "image");
             Image profileImg = new Image();
             profileImg.setImageUrl(response.getUrl());
@@ -51,7 +58,14 @@ public class SellerServiceImpl implements ISellerService {
         // Handle shop cover image upload
         if (shopCoverImage != null && !shopCoverImage.isEmpty()) {
             FileUploadUtil.assertAllowed(shopCoverImage, FileUploadUtil.IMAGE_PATTERN);
-            String fileName = FileUploadUtil.getFileName(shopCoverImage.getOriginalFilename());
+
+            // Extract the base name and extension from the original file name
+            String originalFileName = shopCoverImage.getOriginalFilename();
+            String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "cover";
+            String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "png";
+
+            String fileName = FileUploadUtil.getFileName(baseName, extension);
+
             CloudinaryResponse response = cloudinaryService.uploadFile(shopCoverImage, fileName, "image");
             Image coverImg = new Image();
             coverImg.setImageUrl(response.getUrl());
@@ -66,12 +80,15 @@ public class SellerServiceImpl implements ISellerService {
 
         // Convert saved entity to DTO
         SellerDto savedSellerDto = sellerMapper.toDTO(savedSeller);
-        savedSellerDto.setProfileImage(savedSeller.getProfileImage().getImageUrl());
-        savedSellerDto.setShopCoverImage(savedSeller.getShopCoverImage().getImageUrl());
+        savedSellerDto.setProfileImage(savedSeller.getProfileImage() != null ? savedSeller.getProfileImage().getImageUrl() : null);
+        savedSellerDto.setShopCoverImage(savedSeller.getShopCoverImage() != null ? savedSeller.getShopCoverImage().getImageUrl() : null);
         savedSellerDto.setCreatedAt(savedSeller.getCreatedAt());
         savedSellerDto.setUpdatedAt(savedSeller.getUpdatedAt());
         savedSellerDto.setSuspendedAt(savedSeller.getSuspendedAt());
 
         return ResponseEntity.ok(savedSellerDto);
     }
+
+
+
 }

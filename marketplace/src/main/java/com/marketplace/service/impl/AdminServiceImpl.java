@@ -34,6 +34,8 @@ public class AdminServiceImpl  implements IAdminService {
     @Override
     public ResponseEntity<AdminDto> registerAdmin(AdminDto dto, MultipartFile profileImage) {
 
+
+
         // Convert DTO to entity
         Admin admin = adminMapper.toEntity(dto);
         admin.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -41,7 +43,14 @@ public class AdminServiceImpl  implements IAdminService {
         // Handle profile image upload
         if (profileImage != null && !profileImage.isEmpty()) {
             FileUploadUtil.assertAllowed(profileImage, FileUploadUtil.IMAGE_PATTERN);
-            String fileName = FileUploadUtil.getFileName(profileImage.getOriginalFilename());
+
+            // Extract the base name and extension from the original file name
+            String originalFileName = profileImage.getOriginalFilename();
+            String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "profile";
+            String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "png";
+
+            String fileName = FileUploadUtil.getFileName(baseName, extension);
+
             CloudinaryResponse response = cloudinaryService.uploadFile(profileImage, fileName, "image");
             Image image = new Image();
             image.setImageUrl(response.getUrl());
@@ -50,19 +59,17 @@ public class AdminServiceImpl  implements IAdminService {
             admin.setProfileImage(image);
         }
 
-        // Save buyer entity to the database
+        // Save admin entity to the database
         admin.setRole(Role.ADMIN);
         Admin savedAdmin = adminRepository.save(admin);
 
-
         // Convert saved entity to DTO
         AdminDto savedAdminDto = adminMapper.toDTO(savedAdmin);
-        savedAdminDto.setProfileImage(savedAdmin.getProfileImage().getImageUrl());
+        savedAdminDto.setProfileImage(savedAdmin.getProfileImage() != null ? savedAdmin.getProfileImage().getImageUrl() : null);
         savedAdminDto.setCreatedAt(savedAdmin.getCreatedAt());
         savedAdminDto.setUpdatedAt(null);
         savedAdminDto.setSuspendedAt(null);
 
-
-        return ResponseEntity.ok(savedAdminDto);    }
-
+        return ResponseEntity.ok(savedAdminDto);
+    }
 }
