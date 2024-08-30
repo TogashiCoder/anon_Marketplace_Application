@@ -5,7 +5,7 @@ import com.marketplace.exception.ResourceNotFoundException;
 import com.marketplace.mapper.CategoryMapper;
 import com.marketplace.model.Category;
 import com.marketplace.repository.CategoryRepository;
-import com.marketplace.service.CategoryService;
+import com.marketplace.service.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class CategoryServiceImpl implements CategoryService {
+public class ICategoryServiceImpl implements ICategoryService {
 
     @Autowired
     private CategoryRepository categoryRepository;

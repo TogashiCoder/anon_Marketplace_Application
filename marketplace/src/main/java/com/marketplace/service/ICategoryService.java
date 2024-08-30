@@ -4,7 +4,7 @@ import com.marketplace.dto.CategoryDto;
 
 import java.util.List;
 
-public interface CategoryService {
+public interface ICategoryService {
 
     CategoryDto createCategory(CategoryDto categoryDto);
     CategoryDto getCategoryById(Long id);
