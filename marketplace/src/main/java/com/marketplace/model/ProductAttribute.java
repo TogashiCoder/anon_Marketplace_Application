@@ -4,22 +4,24 @@ import com.marketplace.enums.AttributeType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Setter @Getter @ToString
 @AllArgsConstructor @NoArgsConstructor
 @Entity
 public class ProductAttribute {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
-    private String name;
-    private String value;
-
     @ManyToOne
-    @JoinColumn(name = "product_variation_id")
-    private ProductVariation productVariation;
+    @JoinColumn(name = "product_id")
+    private Product product;
 
-    @Enumerated(EnumType.STRING)
-    private AttributeType type;
+    private String name;
+
+    @OneToMany(mappedBy = "attribute", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttributeOption> options = new ArrayList<>();
 
 }

@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter @Getter @ToString
@@ -20,31 +21,38 @@ public class Product {
     private String description;
     private BigDecimal basePrice;
     private BigDecimal discountPrice;
+
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private Seller seller;
+
     private Integer minimumOrderQuantity;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime updatedAt;
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<Image> images;
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<Video> videos;
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductVariation> variations;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductView> views;
+    private List<Image> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Favorite> favorites;
+    private List<Video> videos = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments;
+    private List<ProductVariation> variations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductView> views = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Favorite> favorites = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "promotion_id")
@@ -55,5 +63,8 @@ public class Product {
     private Coupon coupon;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CouponUsage> couponUsages;
+    private List<CouponUsage> couponUsages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductAttribute> attributes = new ArrayList<>();
 }
