@@ -14,11 +14,9 @@ public class Follower {
     @Id
     @GeneratedValue
     private Long id;
-
     @ManyToOne
     @JoinColumn(name = "buyer_id")
     private Buyer buyer;
-
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private Seller seller;
