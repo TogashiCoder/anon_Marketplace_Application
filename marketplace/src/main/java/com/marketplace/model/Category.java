@@ -43,6 +43,8 @@ public class Category {
     @Column(insertable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+
+
 }
 
 
