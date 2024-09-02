@@ -30,18 +30,18 @@ public class ProductDto {
 
     private Long sellerId;
 
-    // URLs for images uploaded by the seller
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> imageUrls;
 
-    // URLs for videos uploaded by the seller
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> videoUrls;
 
-    // Timestamps for product creation and updates
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdAt;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime updatedAt;
+
+    @NotNull(message = "Category ID is required")
+    private Long categoryId;
 }

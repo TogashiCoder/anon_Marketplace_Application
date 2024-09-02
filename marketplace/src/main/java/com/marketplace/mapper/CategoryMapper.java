@@ -1,6 +1,5 @@
 package com.marketplace.mapper;
 
-
 import com.marketplace.dto.CategoryDto;
 import com.marketplace.model.Category;
 import org.mapstruct.Mapper;

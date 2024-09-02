@@ -1,6 +1,5 @@
 package com.marketplace.controller;
 
-
 import com.marketplace.dto.CategoryDto;
 import com.marketplace.service.ICategoryService;
 import jakarta.validation.Valid;
@@ -24,6 +23,20 @@ public class CategoryController {
     public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryDto categoryDto) {
         CategoryDto createdCategory = categoryService.createCategory(categoryDto);
         return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/{categoryId}/set-parent/{parentCategoryId}")
+    public ResponseEntity<CategoryDto> setCategoryAsSubcategory(
+            @PathVariable Long categoryId,
+            @PathVariable Long parentCategoryId) {
+        CategoryDto updatedCategory = categoryService.setCategoryAsSubcategory(categoryId, parentCategoryId);
+        return ResponseEntity.ok(updatedCategory);
+    }
+
+    @PatchMapping("/{categoryId}/remove-parent")
+    public ResponseEntity<CategoryDto> removeSubcategory(@PathVariable Long categoryId) {
+        CategoryDto updatedCategory = categoryService.removeSubcategory(categoryId);
+        return ResponseEntity.ok(updatedCategory);
     }
 
     @GetMapping("/{id}")
@@ -62,15 +75,15 @@ public class CategoryController {
         return ResponseEntity.ok(subcategories);
     }
 
-    @PatchMapping("/{id}/activate")
-    public ResponseEntity<CategoryDto> activateCategory(@PathVariable Long id) {
-        CategoryDto activatedCategory = categoryService.activateCategory(id);
-        return ResponseEntity.ok(activatedCategory);
-    }
-
-    @PatchMapping("/{id}/deactivate")
-    public ResponseEntity<CategoryDto> deactivateCategory(@PathVariable Long id) {
-        CategoryDto deactivatedCategory = categoryService.deactivateCategory(id);
-        return ResponseEntity.ok(deactivatedCategory);
-    }
+//    @PatchMapping("/{id}/activate")
+//    public ResponseEntity<CategoryDto> activateCategory(@PathVariable Long id) {
+//        CategoryDto activatedCategory = categoryService.activateCategory(id);
+//        return ResponseEntity.ok(activatedCategory);
+//    }
+//
+//    @PatchMapping("/{id}/deactivate")
+//    public ResponseEntity<CategoryDto> deactivateCategory(@PathVariable Long id) {
+//        CategoryDto deactivatedCategory = categoryService.deactivateCategory(id);
+//        return ResponseEntity.ok(deactivatedCategory);
+//    }
 }

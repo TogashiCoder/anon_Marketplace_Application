@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 @Service
 public class ICategoryServiceImpl implements ICategoryService {
 
@@ -33,13 +32,50 @@ public class ICategoryServiceImpl implements ICategoryService {
             category.setParentCategory(parentCategory);
             category.setLevel(parentCategory.getLevel() + 1);
         } else {
-            category.setLevel(0);
+            category.setLevel(1);
         }
 
         category.setIsActive(true);
         Category savedCategory = categoryRepository.save(category);
         return categoryMapper.toDto(savedCategory);
     }
+
+    @Override
+    @Transactional
+    public CategoryDto setCategoryAsSubcategory(Long categoryId, Long parentCategoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", categoryId.toString()));
+        Category parentCategory = categoryRepository.findById(parentCategoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", parentCategoryId.toString()));
+
+        category.setParentCategory(parentCategory);
+        category.setLevel(parentCategory.getLevel() + 1);
+
+        Category updatedCategory = categoryRepository.save(category);
+        return categoryMapper.toDto(updatedCategory);
+    }
+
+
+
+    @Override
+    @Transactional
+    public CategoryDto removeSubcategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", categoryId.toString()));
+
+        // Check if the category has a parent
+        if (category.getParentCategory() != null) {
+            // Remove the category from its parent's subcategories
+            category.setParentCategory(null);
+            category.setLevel(1);  // Reset the level to 1 for the root category
+            Category updatedCategory = categoryRepository.save(category);
+            return categoryMapper.toDto(updatedCategory);
+        } else {
+            // If the category has no parent, just return it without any changes
+            return categoryMapper.toDto(category);
+        }
+    }
+
 
     @Override
     public CategoryDto getCategoryById(Long id) {
@@ -102,23 +138,4 @@ public class ICategoryServiceImpl implements ICategoryService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    @Transactional
-    public CategoryDto activateCategory(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id.toString()));
-        category.setIsActive(true);
-        Category updatedCategory = categoryRepository.save(category);
-        return categoryMapper.toDto(updatedCategory);
-    }
-
-    @Override
-    @Transactional
-    public CategoryDto deactivateCategory(Long id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id.toString()));
-        category.setIsActive(false);
-        Category updatedCategory = categoryRepository.save(category);
-        return categoryMapper.toDto(updatedCategory);
-    }
 }

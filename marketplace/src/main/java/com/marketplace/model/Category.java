@@ -20,30 +20,31 @@ public class Category {
     private Long id;
     private String name;
     private String description;
-
     @ManyToOne
     @JoinColumn(name = "parent_category_id")
     private Category parentCategory;
 
     @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> subCategories;
-
     @Column(nullable = false)
     private Integer level;
 
     @Column(nullable = false)
     private Boolean isActive;
 
-    @CreatedDate
-    @Column(updatable = false, nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+//    @CreatedDate
+//    @Column(updatable = false, nullable = false)
+//    @Temporal(TemporalType.TIMESTAMP)
+//    private Date createdAt;
+//
+//    @LastModifiedDate
+//    @Column(insertable = false)
+//    @Temporal(TemporalType.TIMESTAMP)
+//    private Date updatedAt;
 
-    @LastModifiedDate
-    @Column(insertable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
 
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Product> products;
 
 }
 
