@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -147,82 +148,61 @@ public class ProductServiceImpl implements IProductService {
         return ResponseEntity.ok("Product with ID " + id + " has been successfully deleted.");
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
 //    @Override
-//    @Transactional
-//    public ResponseEntity<ProductDto> updateProduct(Long id, ProductDto productDto, List<MultipartFile> images, List<MultipartFile> videos) {
-//        // Find the existing product
-//        Product existingProduct = productRepository.findById(id)
-//                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id.toString()));
+//    public ResponseEntity<List<ProductDto>> getAllProductsByCategory(Long categoryId) {
+//        List<Product> products = productRepository.findByCategoryId(categoryId);
+//        List<ProductDto> productDtos = products.stream()
+//                .map(this::convertToDto)
+//                .collect(Collectors.toList());
+//        return ResponseEntity.ok(productDtos);
+//    }
 //
-//        // Update product details (you can add more fields as needed)
-//        existingProduct.setName(productDto.getName());
-//        existingProduct.setDescription(productDto.getDescription());
-//        existingProduct.setPrice(productDto.getPrice());
-//        existingProduct.setMinimumOrderQuantity(productDto.getMinimumOrderQuantity());
+//    @Override
+//    public ResponseEntity<List<ProductDto>> getAllProductsBySellerId(Long sellerId) {
+//        List<Product> products = productRepository.findBySellerId(sellerId);
+//        List<ProductDto> productDtos = products.stream()
+//                .map(this::convertToDto)
+//                .collect(Collectors.toList());
+//        return ResponseEntity.ok(productDtos);
+//    }
 //
-//        // Handle image uploads
-//        if (images != null && !images.isEmpty()) {
-//            for (MultipartFile image : images) {
-//                FileUploadUtil.assertAllowed(image, FileUploadUtil.IMAGE_PATTERN);
-//                String originalFileName = image.getOriginalFilename();
-//                String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "image";
-//                String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "jpg";
-//
-//                String fileName = FileUploadUtil.getFileName(baseName, extension);
-//                CloudinaryResponse response = cloudinaryService.uploadFile(image, fileName, "image");
-//                Image productImage = new Image();
-//                productImage.setImageUrl(response.getUrl());
-//                productImage.setCloudinaryImageId(response.getPublicId());
-//                productImage.setProduct(existingProduct);
-//                existingProduct.getImages().add(productImage); // Add new image to existing images
-//            }
-//        }
-//
-//        // Handle video uploads
-//        if (videos != null && !videos.isEmpty()) {
-//            for (MultipartFile video : videos) {
-//                FileUploadUtil.assertAllowed(video, FileUploadUtil.VIDEO_PATTERN);
-//                String originalFileName = video.getOriginalFilename();
-//                String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "video";
-//                String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "mp4";
-//
-//                String fileName = FileUploadUtil.getFileName(baseName, extension);
-//                CloudinaryResponse response = cloudinaryService.uploadFile(video, fileName, "video");
-//                Video productVideo = new Video();
-//                productVideo.setVideoUrl(response.getUrl());
-//                productVideo.setCloudinaryVideoId(response.getPublicId());
-//                productVideo.setProduct(existingProduct);
-//                existingProduct.getVideos().add(productVideo); // Add new video to existing videos
-//            }
-//        }
-//
-//        // Save the updated product entity to the database
-//        Product updatedProduct = productRepository.save(existingProduct);
-//
-//        // Convert updated entity to DTO
-//        ProductDto updatedProductDto = productMapper.toDto(updatedProduct);
-//        updatedProductDto.setImageUrls(updatedProduct.getImages().stream().map(Image::getImageUrl).toList());
-//        updatedProductDto.setVideoUrls(updatedProduct.getVideos().stream().map(Video::getVideoUrl).toList());
-//        updatedProductDto.setCategoryId(updatedProduct.getCategory().getId()); // Set the category ID
-//
-//        return ResponseEntity.ok(updatedProductDto);
+//    private ProductDto convertToDto(Product product) {
+//        ProductDto productDto = new ProductDto();
+//        productDto.setId(product.getId());
+//        productDto.setName(product.getName());
+//        productDto.setDescription(product.getDescription());
+//        productDto.setPrice(product.getPrice());
+//        productDto.setMinimumOrderQuantity(product.getMinimumOrderQuantity());
+//        productDto.setSellerId(product.getSeller().getId());
+//        productDto.setCategoryId(product.getCategory().getId());
+//        productDto.setCreatedAt(product.getCreatedAt());
+//        productDto.setUpdatedAt(product.getUpdatedAt());
+//        productDto.setImageUrls(product.getImages().stream()
+//                .map(Image::getImageUrl)
+//                .collect(Collectors.toList()));
+//        productDto.setVideoUrls(product.getVideos().stream()
+//                .map(Video::getVideoUrl)
+//                .collect(Collectors.toList()));
+//        return productDto;
 //    }
 
+    @Override
+    public ResponseEntity<List<ProductDto>> getAllProductsByCategory(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+        List<ProductDto> productDtos = products.stream()
+                .map(productMapper::toDto) // Using ProductMapper to convert to DTO
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(productDtos);
+    }
 
-
-
+    @Override
+    public ResponseEntity<List<ProductDto>> getAllProductsBySellerId(Long sellerId) {
+        List<Product> products = productRepository.findBySellerId(sellerId);
+        List<ProductDto> productDtos = products.stream()
+                .map(productMapper::toDto) // Using ProductMapper to convert to DTO
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(productDtos);
+    }
 
     @Override
     @Transactional

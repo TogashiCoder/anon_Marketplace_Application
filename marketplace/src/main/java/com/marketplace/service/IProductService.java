@@ -13,5 +13,7 @@ public interface IProductService {
     ResponseEntity<ProductDto> getProductById(Long id);
     ResponseEntity<List<ProductDto>> getAllProducts();
     ResponseEntity<String> deleteProduct(Long id);
+    ResponseEntity<List<ProductDto>> getAllProductsByCategory(Long categoryId);
+    ResponseEntity<List<ProductDto>> getAllProductsBySellerId(Long sellerId);
 }
 

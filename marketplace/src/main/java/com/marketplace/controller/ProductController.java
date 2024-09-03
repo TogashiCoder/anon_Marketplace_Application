@@ -99,6 +99,16 @@ public class ProductController {
 
 
 
+    @GetMapping("/category/{id}")
+    public ResponseEntity<List<ProductDto>> getAllProductsByCategory(@PathVariable Long id) {
+        return productService.getAllProductsByCategory(id);
+    }
+
+    @GetMapping("/seller/{id}")
+    public ResponseEntity<List<ProductDto>> getAllProductsBySellerId(@PathVariable Long id) {
+        return productService.getAllProductsBySellerId(id);
+    }
+
 
 
 }
