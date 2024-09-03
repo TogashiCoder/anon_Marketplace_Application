@@ -8,7 +8,7 @@ Spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -23,3 +23,7 @@ Spring:
       max-file-size: 5MB
       max-request-size: 15MB
 
+
+  logging:
+    level:
+      com.marketplace: DEBUG

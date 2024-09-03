@@ -1,12 +1,12 @@
 package com.marketplace.service.impl;
 
+import com.marketplace.controller.ProductController;
 import com.marketplace.dto.CloudinaryResponse;
 import com.marketplace.dto.ProductDto;
+import com.marketplace.exception.FuncErrorException;
+import com.marketplace.exception.ResourceNotFoundException;
 import com.marketplace.mapper.ProductMapper;
-import com.marketplace.model.Image;
-import com.marketplace.model.Product;
-import com.marketplace.model.Seller;
-import com.marketplace.model.Video;
+import com.marketplace.model.*;
 import com.marketplace.repository.CategoryRepository;
 import com.marketplace.repository.ProductRepository;
 import com.marketplace.repository.SellerRepository;
@@ -14,6 +14,8 @@ import com.marketplace.service.IProductService;
 import com.marketplace.util.FileUploadUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,9 @@ public class ProductServiceImpl implements IProductService {
     private final CloudinaryService cloudinaryService;
     private final SellerRepository sellerRepository;
     private final CategoryRepository categoryRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
+
 
     @Override
     @Transactional
@@ -95,52 +100,24 @@ public class ProductServiceImpl implements IProductService {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedProductDto);
     }
 
-    @Override
-    @Transactional
-    public ResponseEntity<ProductDto> updateProduct(Long id, ProductDto productDto, List<MultipartFile> images, List<MultipartFile> videos) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        // Update the product properties
-        productMapper.updateProductFromDto(productDto, product);
 
-        // Fetch the Category entity using categoryId
-        var category = categoryRepository.findById(productDto.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + productDto.getCategoryId()));
-        product.setCategory(category); // Update the category on the Product entity
-
-        // Handle image uploads (similar to createProduct)
-        if (images != null && !images.isEmpty()) {
-            // Handle image uploads as done in createProduct
-        }
-
-        // Handle video uploads (similar to createProduct)
-        if (videos != null && !videos.isEmpty()) {
-            // Handle video uploads as done in createProduct
-        }
-
-        Product updatedProduct = productRepository.save(product);
-
-        ProductDto updatedProductDto = productMapper.toDto(updatedProduct);
-        updatedProductDto.setImageUrls(updatedProduct.getImages().stream().map(Image::getImageUrl).toList());
-        updatedProductDto.setVideoUrls(updatedProduct.getVideos().stream().map(Video::getVideoUrl).toList());
-        updatedProductDto.setCategoryId(updatedProduct.getCategory().getId()); // Set the updated category ID
-
-        return ResponseEntity.ok(updatedProductDto);
-    }
 
     @Override
     public ResponseEntity<ProductDto> getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id.toString()));
 
+        // Map the product entity to ProductDto
         ProductDto productDto = productMapper.toDto(product);
         productDto.setImageUrls(product.getImages().stream().map(Image::getImageUrl).toList());
         productDto.setVideoUrls(product.getVideos().stream().map(Video::getVideoUrl).toList());
-        productDto.setCategoryId(product.getCategory().getId()); // Set the category ID
+        productDto.setCategoryId(product.getCategory().getId());
 
         return ResponseEntity.ok(productDto);
     }
+
+
 
     @Override
     public ResponseEntity<List<ProductDto>> getAllProducts() {
@@ -162,8 +139,162 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     @Transactional
-    public ResponseEntity<Void> deleteProduct(Long id) {
+    public ResponseEntity<String> deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Product", "id", id.toString());
+        }
         productRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Product with ID " + id + " has been successfully deleted.");
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    @Override
+//    @Transactional
+//    public ResponseEntity<ProductDto> updateProduct(Long id, ProductDto productDto, List<MultipartFile> images, List<MultipartFile> videos) {
+//        // Find the existing product
+//        Product existingProduct = productRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id.toString()));
+//
+//        // Update product details (you can add more fields as needed)
+//        existingProduct.setName(productDto.getName());
+//        existingProduct.setDescription(productDto.getDescription());
+//        existingProduct.setPrice(productDto.getPrice());
+//        existingProduct.setMinimumOrderQuantity(productDto.getMinimumOrderQuantity());
+//
+//        // Handle image uploads
+//        if (images != null && !images.isEmpty()) {
+//            for (MultipartFile image : images) {
+//                FileUploadUtil.assertAllowed(image, FileUploadUtil.IMAGE_PATTERN);
+//                String originalFileName = image.getOriginalFilename();
+//                String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "image";
+//                String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "jpg";
+//
+//                String fileName = FileUploadUtil.getFileName(baseName, extension);
+//                CloudinaryResponse response = cloudinaryService.uploadFile(image, fileName, "image");
+//                Image productImage = new Image();
+//                productImage.setImageUrl(response.getUrl());
+//                productImage.setCloudinaryImageId(response.getPublicId());
+//                productImage.setProduct(existingProduct);
+//                existingProduct.getImages().add(productImage); // Add new image to existing images
+//            }
+//        }
+//
+//        // Handle video uploads
+//        if (videos != null && !videos.isEmpty()) {
+//            for (MultipartFile video : videos) {
+//                FileUploadUtil.assertAllowed(video, FileUploadUtil.VIDEO_PATTERN);
+//                String originalFileName = video.getOriginalFilename();
+//                String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "video";
+//                String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "mp4";
+//
+//                String fileName = FileUploadUtil.getFileName(baseName, extension);
+//                CloudinaryResponse response = cloudinaryService.uploadFile(video, fileName, "video");
+//                Video productVideo = new Video();
+//                productVideo.setVideoUrl(response.getUrl());
+//                productVideo.setCloudinaryVideoId(response.getPublicId());
+//                productVideo.setProduct(existingProduct);
+//                existingProduct.getVideos().add(productVideo); // Add new video to existing videos
+//            }
+//        }
+//
+//        // Save the updated product entity to the database
+//        Product updatedProduct = productRepository.save(existingProduct);
+//
+//        // Convert updated entity to DTO
+//        ProductDto updatedProductDto = productMapper.toDto(updatedProduct);
+//        updatedProductDto.setImageUrls(updatedProduct.getImages().stream().map(Image::getImageUrl).toList());
+//        updatedProductDto.setVideoUrls(updatedProduct.getVideos().stream().map(Video::getVideoUrl).toList());
+//        updatedProductDto.setCategoryId(updatedProduct.getCategory().getId()); // Set the category ID
+//
+//        return ResponseEntity.ok(updatedProductDto);
+//    }
+
+
+
+
+
+    @Override
+    @Transactional
+    public ResponseEntity<ProductDto> updateProduct(Long id, ProductDto productDto, List<MultipartFile> images, List<MultipartFile> videos) {
+        // Fetch the existing product
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id.toString()));
+
+        // Update product details
+        existingProduct.setName(productDto.getName());
+        existingProduct.setDescription(productDto.getDescription());
+        existingProduct.setPrice(productDto.getPrice());
+        existingProduct.setMinimumOrderQuantity(productDto.getMinimumOrderQuantity());
+        existingProduct.setCategory(categoryRepository.findById(productDto.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + productDto.getCategoryId())));
+
+        // Handle image uploads
+        if (images != null && !images.isEmpty()) {
+            for (MultipartFile image : images) {
+                FileUploadUtil.assertAllowed(image, FileUploadUtil.IMAGE_PATTERN);
+                String originalFileName = image.getOriginalFilename();
+                String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "image";
+                String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "jpg";
+
+                String fileName = FileUploadUtil.getFileName(baseName, extension);
+                CloudinaryResponse response = cloudinaryService.uploadFile(image, fileName, "image");
+                Image productImage = new Image();
+                productImage.setImageUrl(response.getUrl());
+                productImage.setCloudinaryImageId(response.getPublicId());
+                productImage.setProduct(existingProduct);
+                existingProduct.getImages().add(productImage);
+            }
+        }
+
+        // Handle video uploads
+        if (videos != null && !videos.isEmpty()) {
+            for (MultipartFile video : videos) {
+                FileUploadUtil.assertAllowed(video, FileUploadUtil.VIDEO_PATTERN);
+                String originalFileName = video.getOriginalFilename();
+                String baseName = originalFileName != null ? originalFileName.substring(0, originalFileName.lastIndexOf('.')) : "video";
+                String extension = originalFileName != null ? originalFileName.substring(originalFileName.lastIndexOf('.') + 1) : "mp4";
+
+                String fileName = FileUploadUtil.getFileName(baseName, extension);
+                CloudinaryResponse response = cloudinaryService.uploadFile(video, fileName, "video");
+                Video productVideo = new Video();
+                productVideo.setVideoUrl(response.getUrl());
+                productVideo.setCloudinaryVideoId(response.getPublicId());
+                productVideo.setProduct(existingProduct);
+                existingProduct.getVideos().add(productVideo);
+            }
+        }
+
+        // Save the updated product entity to the database
+        Product updatedProduct = productRepository.save(existingProduct);
+
+        // Convert updated entity to DTO
+        ProductDto updatedProductDto = productMapper.toDto(updatedProduct);
+        updatedProductDto.setImageUrls(updatedProduct.getImages().stream().map(Image::getImageUrl).toList());
+        updatedProductDto.setVideoUrls(updatedProduct.getVideos().stream().map(Video::getVideoUrl).toList());
+        updatedProductDto.setCategoryId(updatedProduct.getCategory().getId());
+        updatedProductDto.setSellerId(updatedProduct.getSeller().getId()); // Include sellerId
+
+        return ResponseEntity.ok(updatedProductDto);
+    }
+
+
+
+
+
+
+
+
+
+
 }

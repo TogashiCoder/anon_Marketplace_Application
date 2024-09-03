@@ -43,4 +43,22 @@ public class FileUploadUtil {
         final String date = dateFormat.format(System.currentTimeMillis());
         return String.format(FILE_NAME_FORMAT, name + "_" + date, extension);
     }
+
+
+
+
+        public static String getFileName(MultipartFile file) {
+            String originalFileName = file.getOriginalFilename();
+            if (originalFileName == null) {
+                throw new IllegalArgumentException("Original filename is missing.");
+            }
+            String baseName = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
+            String extension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
+            return baseName + "_" + System.currentTimeMillis() + "." + extension; // Add a timestamp to avoid name clashes
+        }
+
+
+
+
+
 }

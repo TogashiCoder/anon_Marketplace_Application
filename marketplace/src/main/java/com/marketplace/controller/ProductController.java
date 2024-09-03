@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.dto.ProductDto;
 import com.marketplace.service.IProductService;
+import jakarta.validation.ConstraintViolation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/products")
@@ -19,6 +24,8 @@ public class ProductController {
 
     @Autowired
     private IProductService productService;
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
+
 
 
 
@@ -43,7 +50,32 @@ public class ProductController {
 
 
 
-    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProductById(@PathVariable Long id) {
+        return productService.getProductById(id);
+    }
+
+
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllProducts() {
+        return productService.getAllProducts();
+    }
+
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
+        return productService.deleteProduct(id);
+    }
+
+
+
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProduct(
             @PathVariable Long id,
             @RequestPart("product") String productJson,
@@ -65,22 +97,8 @@ public class ProductController {
 
 
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getProductById(@PathVariable Long id) {
-        return productService.getProductById(id);
-    }
 
 
 
-    @GetMapping("/all")
-    public ResponseEntity<?> getAllProducts() {
-        return productService.getAllProducts();
-    }
 
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        return productService.deleteProduct(id);
-    }
 }
