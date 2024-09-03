@@ -150,7 +150,9 @@ public class ProductServiceImpl implements IProductService {
                     ProductDto dto = productMapper.toDto(product);
                     dto.setImageUrls(product.getImages().stream().map(Image::getImageUrl).toList());
                     dto.setVideoUrls(product.getVideos().stream().map(Video::getVideoUrl).toList());
-                    dto.setCategoryId(product.getCategory().getId()); // Set the category ID
+                    dto.setCategoryId(product.getCategory().getId());
+                    dto.setSellerId(product.getSeller().getId());
+                    dto.setMinimumOrderQuantity(product.getMinimumOrderQuantity());
                     return dto;
                 })
                 .toList();

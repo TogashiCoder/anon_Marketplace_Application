@@ -28,6 +28,12 @@ public class ProductDto {
     @Positive(message = "Price must be positive")
     private BigDecimal price;
 
+    @NotNull(message = "minimumOrderQuantity is required")
+    @Positive(message = "minimumOrderQuantity must be positive")
+    private Integer minimumOrderQuantity;
+
+
+    @NotNull(message = "Seller ID is required")
     private Long sellerId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

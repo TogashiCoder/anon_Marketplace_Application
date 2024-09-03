@@ -23,12 +23,12 @@ public class Product {
     private String description;
     private BigDecimal price;
     private BigDecimal discountPrice;
+    private Integer minimumOrderQuantity;
 
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private Seller seller;
 
-    private Integer minimumOrderQuantity;
 
     @CreatedDate
     @Column(updatable = false)
