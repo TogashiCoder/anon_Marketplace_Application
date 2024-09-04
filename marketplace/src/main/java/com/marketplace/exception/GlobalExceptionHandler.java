@@ -25,7 +25,8 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // Handle validation errors
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
@@ -52,24 +53,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGlobalException(Exception exception, WebRequest request) {
-        // Log the exception details for debugging
         logger.error("An error occurred: ", exception);
 
         ErrorResponseDto errorResponseDto = new ErrorResponseDto(
                 request.getDescription(false),
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Error processing product creation",
+                "Error processing request",
                 LocalDateTime.now(),
-                null // No validation errors
+                null
         );
         return new ResponseEntity<>(errorResponseDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // Handle ResourceNotFoundException
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleResourceNotFoundException(ResourceNotFoundException exception, WebRequest request) {
         ErrorResponseDto errorResponseDto = new ErrorResponseDto(
@@ -77,12 +74,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.NOT_FOUND,
                 exception.getMessage(),
                 LocalDateTime.now(),
-                null // No validation errors for resource not found
+                null
         );
         return new ResponseEntity<>(errorResponseDto, HttpStatus.NOT_FOUND);
     }
 
-    // Handle UserAlreadyExistsException
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDto> handleUserAlreadyExistsException(UserAlreadyExistsException exception, WebRequest request) {
         ErrorResponseDto errorResponseDto = new ErrorResponseDto(
@@ -90,12 +86,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
                 LocalDateTime.now(),
-                null // No validation errors for user already exists
+                null
         );
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
-    // Handle AlreadyFollowingException
     @ExceptionHandler(AlreadyFollowingException.class)
     public ResponseEntity<ErrorResponseDto> handleAlreadyFollowingException(AlreadyFollowingException exception, WebRequest request) {
         ErrorResponseDto errorResponseDto = new ErrorResponseDto(
@@ -103,12 +98,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
                 LocalDateTime.now(),
-                null // No validation errors for already following
+                null
         );
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
-    // Handle FollowerNotFoundException
     @ExceptionHandler(FollowerNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleFollowerNotFoundException(FollowerNotFoundException exception, WebRequest request) {
         ErrorResponseDto errorResponseDto = new ErrorResponseDto(
@@ -116,12 +110,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 HttpStatus.NOT_FOUND,
                 exception.getMessage(),
                 LocalDateTime.now(),
-                null // No validation errors for follower not found
+                null
         );
         return new ResponseEntity<>(errorResponseDto, HttpStatus.NOT_FOUND);
     }
 
-    // Handle HttpMessageNotReadableException for malformed JSON
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(AccessDeniedException exception, WebRequest request) {
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
+                request.getDescription(false),
+                HttpStatus.FORBIDDEN,
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null
+        );
+        return new ResponseEntity<>(errorResponseDto, HttpStatus.FORBIDDEN);
+    }
+
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex,
@@ -138,7 +143,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
 
-
     @ExceptionHandler(JsonProcessingException.class)
     public ResponseEntity<ErrorResponseDto> handleJsonProcessingException(JsonProcessingException exception, WebRequest request) {
         ErrorResponseDto errorResponseDto = new ErrorResponseDto(
@@ -150,5 +154,4 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
         return new ResponseEntity<>(errorResponseDto, HttpStatus.BAD_REQUEST);
     }
-
 }

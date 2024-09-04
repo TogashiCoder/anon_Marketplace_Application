@@ -1,6 +1,7 @@
 package com.marketplace.service;
 
 import com.marketplace.dto.FavoriteDto;
+import com.marketplace.model.Favorite;
 
 import java.util.List;
 

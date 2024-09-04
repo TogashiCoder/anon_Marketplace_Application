@@ -22,10 +22,12 @@ public class Favorite {
 
     @ManyToOne
     @JoinColumn(name = "buyer_id")
+    @JsonBackReference
     private Buyer buyer;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonBackReference
     private Product product;
 
     @CreatedDate
