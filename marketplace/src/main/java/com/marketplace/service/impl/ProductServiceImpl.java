@@ -147,6 +147,16 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    public ResponseEntity<List<ProductDto>> getAllProductsWithoutCoupon() {
+        List<Product> products = productRepository.findByCouponIsNull();
+        List<ProductDto> productDtos = products.stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(productDtos);
+    }
+
+
+    @Override
     @Transactional
     public ResponseEntity<ProductDto> updateProduct(Long id, ProductDto productDto, List<MultipartFile> images, List<MultipartFile> videos) {
         // Fetch the existing product

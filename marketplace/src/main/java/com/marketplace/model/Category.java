@@ -1,5 +1,6 @@
 package com.marketplace.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -12,7 +13,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 public class Category {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String description;
@@ -28,18 +29,9 @@ public class Category {
     @Column(nullable = false)
     private Boolean isActive;
 
-//    @CreatedDate
-//    @Column(updatable = false, nullable = false)
-//    @Temporal(TemporalType.TIMESTAMP)
-//    private Date createdAt;
-//
-//    @LastModifiedDate
-//    @Column(insertable = false)
-//    @Temporal(TemporalType.TIMESTAMP)
-//    private Date updatedAt;
-
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Product> products;
 
 }

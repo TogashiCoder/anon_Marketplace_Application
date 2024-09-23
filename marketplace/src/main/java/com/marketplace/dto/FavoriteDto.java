@@ -16,15 +16,10 @@ public class FavoriteDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
-
     @NotNull(message = "Buyer ID cannot be null")
     private Long buyerId;
-
-//    @NotNull(message = "Product ID cannot be null")
-//    private Long productId;
-@NotNull(message = "Product ID cannot be null")
-private ProductDto product; // Changed to ProductDto
-
+    @NotNull(message = "Product ID cannot be null")
+    private ProductDto product;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime favoritedAt;
 

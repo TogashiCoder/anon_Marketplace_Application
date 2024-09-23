@@ -7,13 +7,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Setter @Getter
 @AllArgsConstructor @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 public class CouponUsage {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

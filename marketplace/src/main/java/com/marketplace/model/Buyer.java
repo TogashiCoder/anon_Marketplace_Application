@@ -32,7 +32,7 @@ public class Buyer extends User{
     @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL)
     private List<CouponUsage> couponUsages;
 
-    @JsonManagedReference
     @OneToOne(mappedBy = "buyer")
+    @JsonManagedReference
     private ShoppingCart shoppingCart;
 }

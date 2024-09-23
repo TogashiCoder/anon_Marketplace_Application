@@ -1,5 +1,6 @@
 package com.marketplace.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,8 +18,10 @@ public class Seller extends User {
     private Image shopCoverImage;
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Product> products;
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Follower> followers;
+
 }

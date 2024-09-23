@@ -12,13 +12,13 @@ import lombok.Setter;
 @Entity
 public class Image {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String imageUrl;
     private String cloudinaryImageId;
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "product_id")
+    @JsonIgnore
     private Product product;
     @JsonIgnore
     @ManyToOne

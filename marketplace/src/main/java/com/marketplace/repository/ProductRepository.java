@@ -1,5 +1,6 @@
 package com.marketplace.repository;
 
+import com.marketplace.model.Coupon;
 import com.marketplace.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,4 +12,7 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
 
     List<Product> findByCategoryId(Long categoryId);
     List<Product> findBySellerId(Long sellerId);
+    List<Product> findByCouponIsNull();
+    List<Product> findByCoupon(Coupon coupon);
+
 }

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 public class ProductView {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

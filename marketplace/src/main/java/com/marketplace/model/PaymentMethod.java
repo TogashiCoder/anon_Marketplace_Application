@@ -9,7 +9,7 @@ import lombok.*;
 @Entity
 public class PaymentMethod {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Enumerated(EnumType.STRING)
     private PaymentType paymentType;

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.dto.ProductDto;
 import com.marketplace.service.IProductService;
-import jakarta.validation.ConstraintViolation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +108,11 @@ public class ProductController {
         return productService.getAllProductsBySellerId(id);
     }
 
+
+    @GetMapping("/no-coupon")
+    public ResponseEntity<List<ProductDto>> getAllProductsWithoutCoupon() {
+        return productService.getAllProductsWithoutCoupon();
+    }
 
 
 }

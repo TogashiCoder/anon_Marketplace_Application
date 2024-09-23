@@ -1,5 +1,7 @@
 package com.marketplace.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,22 +14,28 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Setter @Getter @ToString
+@Setter @Getter
 @AllArgsConstructor @NoArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Product {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String description;
     private BigDecimal price;
     private BigDecimal discountPrice;
     private Integer minimumOrderQuantity;
+    private Integer stockQuantity;
+
+    //new addition after testing
+    private Integer discountPercentage;
+    private BigDecimal rating;
 
     @ManyToOne
     @JoinColumn(name = "seller_id")
+    @JsonBackReference
     private Seller seller;
 
 
