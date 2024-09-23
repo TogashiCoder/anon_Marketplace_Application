@@ -12,20 +12,20 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/admin/categories")
+@RequestMapping("/api/categories")
 @Validated
 public class CategoryController {
 
     @Autowired
     private ICategoryService categoryService;
 
-    @PostMapping
+    @PostMapping("/admin/add")
     public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryDto categoryDto) {
         CategoryDto createdCategory = categoryService.createCategory(categoryDto);
         return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
     }
 
-    @PatchMapping("/{categoryId}/set-parent/{parentCategoryId}")
+    @PatchMapping("/admin/{categoryId}/set-parent/{parentCategoryId}")
     public ResponseEntity<CategoryDto> setCategoryAsSubcategory(
             @PathVariable Long categoryId,
             @PathVariable Long parentCategoryId) {
@@ -33,7 +33,7 @@ public class CategoryController {
         return ResponseEntity.ok(updatedCategory);
     }
 
-    @PatchMapping("/{categoryId}/remove-parent")
+    @PatchMapping("/admin/{categoryId}/remove-parent")
     public ResponseEntity<CategoryDto> removeSubcategory(@PathVariable Long categoryId) {
         CategoryDto updatedCategory = categoryService.removeSubcategory(categoryId);
         return ResponseEntity.ok(updatedCategory);
@@ -45,19 +45,19 @@ public class CategoryController {
         return ResponseEntity.ok(category);
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<CategoryDto>> getAllCategories() {
         List<CategoryDto> categories = categoryService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/admin/{id}")
     public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDto categoryDto) {
         CategoryDto updatedCategory = categoryService.updateCategory(id, categoryDto);
         return ResponseEntity.ok(updatedCategory);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();

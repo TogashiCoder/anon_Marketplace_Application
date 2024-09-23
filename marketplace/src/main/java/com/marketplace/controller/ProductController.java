@@ -1,5 +1,6 @@
 package com.marketplace.controller;
 
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.dto.ProductDto;
@@ -12,10 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
 
 @RestController
 @RequestMapping("/api/products")
@@ -52,7 +51,7 @@ public class ProductController {
 
 
 
-    @GetMapping("/{id}")
+    @GetMapping("by/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id) {
         return productService.getProductById(id);
     }
@@ -66,7 +65,7 @@ public class ProductController {
 
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         return productService.deleteProduct(id);
     }
@@ -74,7 +73,7 @@ public class ProductController {
 
 
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/edit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProduct(
             @PathVariable Long id,
             @RequestPart("product") String productJson,

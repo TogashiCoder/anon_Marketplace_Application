@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.dto.BuyerDto;
 import com.marketplace.service.IBuyerService;
+import com.marketplace.service.securityService.AuthenticationService;
+import com.marketplace.service.securityService.model.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +22,8 @@ public class BuyerController {
 
     @Autowired
     private IBuyerService buyerService;
+    @Autowired
+    private AuthenticationService authenticationService;
 
 
 
@@ -33,9 +37,14 @@ public class BuyerController {
             ObjectMapper mapper = new ObjectMapper();
             BuyerDto buyerDTO = mapper.readValue(buyerJson, BuyerDto.class);
 
-            // Register the buyer and get the response DTO
-            ResponseEntity<BuyerDto> response = buyerService.registerBuyer(buyerDTO, profileImage);
-            return response;
+            // Use AuthenticationService to handle buyer registration and JWT generation
+            AuthenticationResponse response = authenticationService.registerBuyer(buyerDTO, profileImage);
+
+            if (response.getAccessToken() != null) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
 
         } catch (JsonProcessingException e) {
             return ResponseEntity.badRequest().body("Error parsing buyer JSON: " + e.getMessage());
@@ -43,6 +52,30 @@ public class BuyerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error registering buyer: " + e.getMessage());
         }
     }
+
+
+
+
+
+
+//    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<?> registerBuyer(
+//            @RequestPart("buyer") String buyerJson,
+//            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+//        try {
+//            ObjectMapper mapper = new ObjectMapper();
+//            BuyerDto buyerDTO = mapper.readValue(buyerJson, BuyerDto.class);
+//
+//            // Register the buyer and get the response DTO
+//            ResponseEntity<BuyerDto> response = buyerService.registerBuyer(buyerDTO, profileImage);
+//            return response;
+//
+//        } catch (JsonProcessingException e) {
+//            return ResponseEntity.badRequest().body("Error parsing buyer JSON: " + e.getMessage());
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error registering buyer: " + e.getMessage());
+//        }
+//    }
 
 
 

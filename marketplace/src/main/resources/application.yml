@@ -33,3 +33,11 @@ paypal:
   client-id: AbXhC4sqeQDgEwc-Op28Fl1IAbAVLCO-0xkD_vsjoWecOeEuJbtxz5713UH6-dB4VSsh5gCHWKz9gqEe
   client-secret: EAGgkfg4pFq-wEO6OFCVms_Bd40yD0J7bpbRr2wB9r8AEMf4OaS6RKHFUMojpwD-ubxdxw-i2WOfONE0
   mode: sandbox # Use #sandbox' for testing and 'live' for Production
+
+
+application:
+  security:
+    jwt:
+      secret-key: 4bb6d1dfbafb64a681139d1586b6f1160d18159afd57c8c79136d7490630407c
+      access-token-expiration: 86400000
+      refresh-token-expiration: 604800000
