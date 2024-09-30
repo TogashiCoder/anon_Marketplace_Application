@@ -94,6 +94,9 @@ public class IFavoriteServiceImpl implements IFavoriteService {
                         productDto.setName(product.getName());
                         productDto.setDescription(product.getDescription());
                         productDto.setPrice(product.getPrice());
+                        productDto.setStockQuantity(product.getStockQuantity());
+                        productDto.setRating(product.getRating());
+                        productDto.setDiscountPercentage(product.getDiscountPercentage());
                         productDto.setMinimumOrderQuantity(product.getMinimumOrderQuantity());
                         productDto.setSellerId(product.getSeller() != null ? product.getSeller().getId() : null);
                         productDto.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);

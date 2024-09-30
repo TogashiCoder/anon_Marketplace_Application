@@ -138,4 +138,17 @@ public class ICategoryServiceImpl implements ICategoryService {
                 .collect(Collectors.toList());
     }
 
+
+    @Override
+    public List<String> getAllCategoriesNames() {
+        List<Category> categories = categoryRepository.findAll();
+
+        // Extract and return a simple list of all category names
+        return categories.stream()
+                .map(Category::getName)
+                .collect(Collectors.toList());
+    }
+
+
+
 }

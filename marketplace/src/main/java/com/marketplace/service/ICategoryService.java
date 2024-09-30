@@ -15,6 +15,7 @@ public interface ICategoryService {
     void deleteCategory(Long id);
     List<CategoryDto> getRootCategories();
     List<CategoryDto> getSubcategories(Long id);
+    List<String> getAllCategoriesNames();
     //CategoryDto activateCategory(Long id);
     //CategoryDto deactivateCategory(Long id);
 

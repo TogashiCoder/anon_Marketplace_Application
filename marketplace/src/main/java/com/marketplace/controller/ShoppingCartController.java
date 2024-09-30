@@ -10,6 +10,7 @@ import com.marketplace.service.paymentService.PaypalService;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,16 +23,17 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cart")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ShoppingCartController {
 
-    @Autowired
-    private ShoppingCartService shoppingCartService;
 
-    @Autowired
-    private PaypalService paypalService;
+    private final ShoppingCartService shoppingCartService;
 
-    @Autowired
-    private IOrderService orderService;
+
+    private final PaypalService paypalService;
+
+
+    private final IOrderService orderService;
 
 
 

@@ -1,6 +1,7 @@
 server:
   port: 8080
-Spring:
+
+spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/mercoradb
     username: postgres
@@ -15,25 +16,30 @@ Spring:
         format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-
-
   servlet:
     multipart:
       enabled: true
       max-file-size: 5MB
       max-request-size: 15MB
-
-
   logging:
     level:
       com.marketplace: DEBUG
-
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ibrahimsilver007@gmail.com
+    password: tvhjkycaeelqlqha
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 paypal:
   client-id: AbXhC4sqeQDgEwc-Op28Fl1IAbAVLCO-0xkD_vsjoWecOeEuJbtxz5713UH6-dB4VSsh5gCHWKz9gqEe
   client-secret: EAGgkfg4pFq-wEO6OFCVms_Bd40yD0J7bpbRr2wB9r8AEMf4OaS6RKHFUMojpwD-ubxdxw-i2WOfONE0
-  mode: sandbox # Use #sandbox' for testing and 'live' for Production
-
+  mode: sandbox # Use 'sandbox' for testing and 'live' for Production
 
 application:
   security:

@@ -8,6 +8,7 @@ import com.marketplace.model.Admin;
 import com.marketplace.service.IAdminService;
 import com.marketplace.service.securityService.AuthenticationService;
 import com.marketplace.service.securityService.model.AuthenticationResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,12 +21,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/admins")
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class AdminController {
 
-    @Autowired
-    private IAdminService adminService;
-    @Autowired
-    private AuthenticationService authenticationService;
+
+    private final IAdminService adminService;
+
+    private final AuthenticationService authenticationService;
 
 
 

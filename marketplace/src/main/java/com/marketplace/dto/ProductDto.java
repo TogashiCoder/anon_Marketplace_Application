@@ -36,17 +36,15 @@ public class ProductDto {
     private Integer minimumOrderQuantity;
 
 
-    //new addition after testing
+
+
 
     @Min(value = 0, message = "Discount percentage must be at least 0")
     @Max(value = 100, message = "Discount percentage must not exceed 100")
     private Integer discountPercentage;
 
-    @Positive(message = "Rating must be positive")
-    @Min(value = 1, message = "Rating must be at least 1")
-    @Max(value = 5, message = "Rating must not exceed 5")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal rating;
-
 
 
     @NotNull(message = "Seller ID is required")
@@ -66,5 +64,9 @@ public class ProductDto {
 
     @NotNull(message = "Category ID is required")
     private Long categoryId;
+
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String categoryName;
 
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marketplace.dto.ProductDto;
 import com.marketplace.service.IProductService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ProductController {
 
-    @Autowired
-    private IProductService productService;
+
+    private final IProductService productService;
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
 

@@ -3,6 +3,7 @@ package com.marketplace.controller;
 import com.marketplace.dto.CommentDto;
 import com.marketplace.service.ICommentService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +13,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/comments")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CommentController {
 
-    @Autowired
-    private ICommentService commentService;
+
+    private final ICommentService commentService;
 
     @PostMapping("/new")
     public ResponseEntity<CommentDto> createComment(@Valid @RequestBody CommentDto commentDto) {

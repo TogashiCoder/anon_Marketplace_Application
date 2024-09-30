@@ -7,6 +7,7 @@ import com.marketplace.dto.BuyerDto;
 import com.marketplace.dto.SellerDto;
 import com.marketplace.service.securityService.AuthenticationService;
 import com.marketplace.service.securityService.model.AuthenticationResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,10 +20,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/test/")
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ControllerTest {
 
-    @Autowired
-    private AuthenticationService authenticationService;
+
+
+    private final AuthenticationService authenticationService;
 
     @PostMapping(value = "/seller/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> registerSeller(

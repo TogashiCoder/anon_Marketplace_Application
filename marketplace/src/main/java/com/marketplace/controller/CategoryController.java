@@ -3,6 +3,7 @@ package com.marketplace.controller;
 import com.marketplace.dto.CategoryDto;
 import com.marketplace.service.ICategoryService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +15,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/categories")
 @Validated
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CategoryController {
 
-    @Autowired
-    private ICategoryService categoryService;
+
+    private final ICategoryService categoryService;
 
     @PostMapping("/admin/add")
     public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryDto categoryDto) {
@@ -74,6 +76,14 @@ public class CategoryController {
         List<CategoryDto> subcategories = categoryService.getSubcategories(id);
         return ResponseEntity.ok(subcategories);
     }
+
+    @GetMapping("/names")
+    public ResponseEntity<List<String>> getAllCategoriesNames() {
+        List<String> categoriesNames = categoryService.getAllCategoriesNames();
+        return ResponseEntity.ok(categoriesNames);
+    }
+
+
 
 //    @PatchMapping("/{id}/activate")
 //    public ResponseEntity<CategoryDto> activateCategory(@PathVariable Long id) {

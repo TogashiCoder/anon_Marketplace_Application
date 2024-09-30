@@ -6,5 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface ISellerService {
     ResponseEntity<SellerDto> registerSeller(SellerDto dto, MultipartFile profileImage, MultipartFile coverImage);
+    ResponseEntity<SellerDto> getSellerById(Long id);
 
 }

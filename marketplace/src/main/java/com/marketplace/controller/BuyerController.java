@@ -6,6 +6,7 @@ import com.marketplace.dto.BuyerDto;
 import com.marketplace.service.IBuyerService;
 import com.marketplace.service.securityService.AuthenticationService;
 import com.marketplace.service.securityService.model.AuthenticationResponse;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,15 +19,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/buyers")
+@AllArgsConstructor(onConstructor_ = {@Autowired})
 public class BuyerController {
 
-    @Autowired
-    private IBuyerService buyerService;
-    @Autowired
-    private AuthenticationService authenticationService;
 
-
-
+    private final IBuyerService buyerService;
+    private final AuthenticationService authenticationService;
 
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

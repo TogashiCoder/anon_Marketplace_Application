@@ -108,15 +108,33 @@ public class ProductServiceImpl implements IProductService {
         return ResponseEntity.ok(productDto);
     }
 
+//    @Override
+//    public ResponseEntity<List<ProductDto>> getAllProducts() {
+//        List<Product> products = productRepository.findAll();
+//        List<ProductDto> productDtos = products.stream()
+//                .map(productMapper::toDto)
+//                .collect(Collectors.toList());
+//
+//        return ResponseEntity.ok(productDtos);
+//    }
+
     @Override
     public ResponseEntity<List<ProductDto>> getAllProducts() {
         List<Product> products = productRepository.findAll();
         List<ProductDto> productDtos = products.stream()
-                .map(productMapper::toDto)
+                .map(product -> {
+                    ProductDto productDto = productMapper.toDto(product);
+                    // Set the category name
+                    if (product.getCategory() != null) {
+                        productDto.setCategoryName(product.getCategory().getName());
+                    }
+                    return productDto;
+                })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(productDtos);
     }
+
 
     @Override
     @Transactional

@@ -18,85 +18,82 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
 
-
     private final UserServiceImpl userServiceImpl;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-
-
-//        @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        return http
-//                //1
-//                .csrf(AbstractHttpConfigurer::disable)
-//                //2
-//                .authorizeHttpRequests(
-//                        requset->requset.anyRequest().permitAll()
-//                )
-//                .build();
-//    }
-
-
-
-
-
-
-
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         return http
-                //1
                 .csrf(AbstractHttpConfigurer::disable)
-                //2
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .authorizeHttpRequests(
-                        req->req.
-                                 requestMatchers("/login","/api/admins/register","/api/buyers/register","/api/sellers/register")
+                        req -> req
+                                .requestMatchers("/login",
+                                                "/api/admins/register",
+                                               "/api/buyers/register",
+                                              "/api/sellers/register",
+                                              "/api/sellers/by/**",
+                                             "/api/ratings/**",
+                                             "/send-email",
+                                            "/send-html-email",
+                                            "/api/Security/**"
+                                        )
                                 .permitAll()
                                 .requestMatchers("/api/categories/admin/**").hasAuthority("ADMIN")
                                 .requestMatchers("/api/categories/**").permitAll()
-                                .requestMatchers("/api/products/create","/api/products/edit/**").hasAuthority("SELLER")
-                                .requestMatchers("/api/products/delete/**").hasAnyAuthority("ADMIN","SELLER")
+                                .requestMatchers("/api/products/create", "/api/products/edit/**").hasAuthority("SELLER")
+                                .requestMatchers("/api/products/delete/**").hasAnyAuthority("ADMIN", "SELLER")
                                 .requestMatchers("/api/products/**").permitAll()
-                                .requestMatchers("/api/equipment/admin/**","/api/faults/admin").hasAnyAuthority("BUYER","ADMIN","SELLER")
+                                .requestMatchers("/api/equipment/admin/**", "/api/faults/admin").hasAnyAuthority("BUYER", "ADMIN", "SELLER")
+                                .requestMatchers("/api/favorites/**").hasAuthority("BUYER")
+                                .requestMatchers("/api/productsV/**").permitAll()
+                                .requestMatchers("/api/followers/follow","/api/followers/unfollow/**").hasAuthority("BUYER")
+                                .requestMatchers("/api/followers/seller/**",
+                                                "/api/followers/buyer/**",
+                                                "/api/followers/check/**").permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )
-                //3
                 .userDetailsService(userServiceImpl)
-                //4
-                .exceptionHandling(e->e.accessDeniedHandler(customAccessDeniedHandler)
+                .exceptionHandling(e -> e
+                        .accessDeniedHandler(customAccessDeniedHandler)
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
-                //5
-                .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                //6
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                //7
                 .exceptionHandling(
-                        e->e.accessDeniedHandler(
-                                        (request, response, accessDeniedException)->response.setStatus(403)
+                        e -> e.accessDeniedHandler(
+                                        (request, response, accessDeniedException) -> response.setStatus(403)
                                 )
                                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                //8
-//                .logout(l->l
-//                        .logoutUrl("/logout")
-//                        .addLogoutHandler(customLogoutHandler)
-//                        .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()
-//                        ))
                 .build();
-
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "https://yourdomain.com"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -107,7 +104,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-
-
-
 }

@@ -48,6 +48,9 @@ public class Product {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Rating> ratings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -77,5 +80,29 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+
+
+    @PostLoad
+    @PostPersist
+    @PostUpdate
+    private void calculateRating() {
+        this.rating = calculateAverageRating();
+    }
+
+    public BigDecimal calculateAverageRating() {
+        if (ratings.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal total = BigDecimal.ZERO;
+        for (Rating rating : ratings) {
+            total = total.add(rating.getValue());
+        }
+        return total.divide(new BigDecimal(ratings.size()), 2, BigDecimal.ROUND_HALF_UP);
+    }
+
+    public BigDecimal getRating() {
+        return rating != null ? rating : calculateAverageRating();
+    }
 
 }

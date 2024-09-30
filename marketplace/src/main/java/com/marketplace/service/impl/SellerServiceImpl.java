@@ -3,10 +3,13 @@ package com.marketplace.service.impl;
 import com.marketplace.dto.CloudinaryResponse;
 import com.marketplace.dto.SellerDto;
 import com.marketplace.enums.Role;
+import com.marketplace.exception.ResourceNotFoundException;
 import com.marketplace.mapper.SellerMapper;
 import com.marketplace.model.Image;
 import com.marketplace.model.Seller;
+import com.marketplace.model.User;
 import com.marketplace.repository.SellerRepository;
+import com.marketplace.repository.UserRepository;
 import com.marketplace.service.ISellerService;
 import com.marketplace.util.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,9 @@ public class SellerServiceImpl implements ISellerService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private SellerMapper sellerMapper;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     @Transactional
@@ -87,6 +93,26 @@ public class SellerServiceImpl implements ISellerService {
         savedSellerDto.setSuspendedAt(savedSeller.getSuspendedAt());
 
         return ResponseEntity.ok(savedSellerDto);
+    }
+
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<SellerDto> getSellerById(Long id) {
+        // Find the seller by id
+        Seller seller = sellerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller","id",id.toString()));
+
+        // Convert seller entity to DTO
+        SellerDto sellerDto = sellerMapper.toDTO(seller);
+        sellerDto.setProfileImage(seller.getProfileImage() != null ? seller.getProfileImage().getImageUrl() : null);
+        sellerDto.setShopCoverImage(seller.getShopCoverImage() != null ? seller.getShopCoverImage().getImageUrl() : null);
+        sellerDto.setCreatedAt(seller.getCreatedAt());
+        sellerDto.setUpdatedAt(seller.getUpdatedAt());
+        sellerDto.setSuspendedAt(seller.getSuspendedAt());
+
+        return ResponseEntity.ok(sellerDto);
     }
 
 
