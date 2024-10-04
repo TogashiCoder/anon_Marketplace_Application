@@ -74,9 +74,12 @@ public class CouponController {
         return new ResponseEntity<>(isValid, HttpStatus.OK);
     }
 
-    @PostMapping("/{couponId}/apply/product/{productId}")
-    public ResponseEntity<CouponDto> applyCouponToProduct(@PathVariable Long couponId, @PathVariable Long productId) {
-        CouponDto appliedCoupon = couponService.applyCouponToProduct(couponId, productId);
+    @PostMapping("/{couponId}/apply/product/{productId}/buyer/{buyerId}")
+    public ResponseEntity<CouponDto> applyCouponToProduct(
+            @PathVariable Long couponId,
+            @PathVariable Long productId,
+            @PathVariable Long buyerId) {
+        CouponDto appliedCoupon = couponService.applyCouponToProduct(couponId, productId, buyerId);
         return new ResponseEntity<>(appliedCoupon, HttpStatus.OK);
     }
 }

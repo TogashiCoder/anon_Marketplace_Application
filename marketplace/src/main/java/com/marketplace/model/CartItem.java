@@ -21,9 +21,12 @@ public class CartItem {
 
     @ManyToOne
     @JoinColumn(name = "shopping_cart_id")
-    @JsonIgnore
+    //be carful
+    @JsonBackReference
     private ShoppingCart shoppingCart;
 
     private Integer quantity;
     private BigDecimal price;
+
+    //
 }

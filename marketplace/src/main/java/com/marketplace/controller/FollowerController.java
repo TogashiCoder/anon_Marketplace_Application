@@ -1,6 +1,7 @@
 package com.marketplace.controller;
 
 import com.marketplace.dto.FollowerDTO;
+import com.marketplace.model.Buyer;
 import com.marketplace.service.FollowerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +38,14 @@ public class FollowerController {
     }
 
 
+//    @GetMapping("/seller/{sellerId}")
+//    public ResponseEntity<List<FollowerDTO>> getAllFollowersOfSeller(@PathVariable Long sellerId) {
+//        return new ResponseEntity<>(followerService.getAllFollowersOfSeller(sellerId), HttpStatus.OK);
+//    }
+
     @GetMapping("/seller/{sellerId}")
-    public ResponseEntity<List<FollowerDTO>> getAllFollowersOfSeller(@PathVariable Long sellerId) {
-        return new ResponseEntity<>(followerService.getAllFollowersOfSeller(sellerId), HttpStatus.OK);
+    public ResponseEntity<List<Buyer>> getAllFollowersOfSellerTest(@PathVariable Long sellerId) {
+        return new ResponseEntity<>(followerService.getAllFollowersOfSellerTest(sellerId), HttpStatus.OK);
     }
 
     @GetMapping("/buyer/{buyerId}")
@@ -72,4 +78,9 @@ public class FollowerController {
     public ResponseEntity<Long> getFollowerCountForSeller(@PathVariable Long sellerId) {
         return new ResponseEntity<>(followerService.getFollowerCountForSeller(sellerId), HttpStatus.OK);
     }
+
+
+
+
+
 }

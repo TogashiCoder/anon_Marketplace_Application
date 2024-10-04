@@ -18,11 +18,9 @@ public class ShipmentDetails {
     private Long id;
     private String carrierName;
     private String trackingNumber;
-
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime shipmentDate;
-
     @LastModifiedDate
     private LocalDateTime estimatedDeliveryDate;
 }

@@ -75,6 +75,17 @@ public class FollowerServiceImpl implements FollowerService {
     }
 
     @Override
+    public List<Buyer> getAllFollowersOfSellerTest(Long sellerId) {
+        Seller seller = sellerRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller", "id", sellerId.toString()));
+
+        List<Follower> followers = followerRepository.findBySellerId(sellerId);
+        return followers.stream()
+                .map(Follower::getBuyer)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<FollowerDTO> getAllFollowingForBuyer(Long buyerId) {
         Buyer buyer = buyerRepository.findById(buyerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Buyer", "id", buyerId.toString()));

@@ -1,5 +1,6 @@
 package com.marketplace.service.impl;
 
+import com.marketplace.dto.CartItemDto;
 import com.marketplace.exception.DuplicateProductException;
 import com.marketplace.exception.ResourceNotFoundException;
 import com.marketplace.model.Buyer;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ShoppingCartService {
@@ -106,12 +108,38 @@ public class ShoppingCartService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public List<CartItem> getCartItems(Long cartId) {
-        ShoppingCart cart = shoppingCartRepository.findById(cartId)
-                .orElseThrow(() -> new ResourceNotFoundException("ShoppingCart", "ID", cartId.toString()));
+//    public List<CartItem> getCartItems(Long cartId) {
+//        ShoppingCart cart = shoppingCartRepository.findById(cartId)
+//                .orElseThrow(() -> new ResourceNotFoundException("ShoppingCart", "ID", cartId.toString()));
+//
+//        return cart.getItems();
+//    }
 
-        return cart.getItems();
-    }
+public List<CartItemDto> getCartItems(Long cartId) {
+    // Fetch the shopping cart by ID
+    ShoppingCart cart = shoppingCartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("ShoppingCart", "ID", cartId.toString()));
+
+    // Map CartItems to CartItemDTOs
+    return cart.getItems().stream()
+            .map(cartItem -> {
+                String imageUrl = cartItem.getProduct().getImages().isEmpty() ?
+                        null : cartItem.getProduct().getImages().get(0).getImageUrl();
+
+                return new CartItemDto(
+                        cartItem.getId(),
+                        cartItem.getProduct().getName(),
+                        cartItem.getProduct().getPrice(),
+                        cartItem.getQuantity(),
+                        cartItem.getPrice(),
+                        cartItem.getProduct().getId(),
+                        cartItem.getProduct().getMinimumOrderQuantity(),
+                        cartItem.getProduct().getStockQuantity(),
+                        imageUrl
+                );
+            })
+            .collect(Collectors.toList());
+}
 
     @Transactional
     public void clearCart(Long cartId) {
@@ -129,5 +157,34 @@ public class ShoppingCartService {
         return shoppingCartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("ShoppingCart", "ID", cartId.toString()));
     }
+
+
+    @Transactional
+    public Long getCartIdByBuyerId(Long buyerId) {
+        Buyer buyer = buyerRepository.findById(buyerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Buyer", "ID", buyerId.toString()));
+
+        ShoppingCart cart = buyer.getShoppingCart();
+
+        if (cart == null) {
+            throw new ResourceNotFoundException("ShoppingCart", "Buyer ID", buyerId.toString());
+        }
+
+        return cart.getId();
+    }
+
+
+    @Transactional
+    public boolean hasProductInCart(Long cartId, Long productId) {
+        // Fetch the shopping cart by ID
+        ShoppingCart cart = shoppingCartRepository.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException("ShoppingCart", "ID", cartId.toString()));
+
+        // Check if any cart item has the specified product ID
+        return cart.getItems().stream()
+                .anyMatch(cartItem -> cartItem.getProduct().getId().equals(productId));
+    }
+
+
 
 }

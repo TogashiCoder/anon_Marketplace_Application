@@ -60,9 +60,13 @@ public class SecurityConfig {
                                 .requestMatchers("/api/favorites/**").hasAuthority("BUYER")
                                 .requestMatchers("/api/productsV/**").permitAll()
                                 .requestMatchers("/api/followers/follow","/api/followers/unfollow/**").hasAuthority("BUYER")
+                                .requestMatchers("/api/followers").hasAuthority("SELLER")
                                 .requestMatchers("/api/followers/seller/**",
                                                 "/api/followers/buyer/**",
                                                 "/api/followers/check/**").permitAll()
+
+                                .requestMatchers("/api/cart/**").hasAuthority("BUYER")
+                                .requestMatchers("/api/coupons/**").permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )

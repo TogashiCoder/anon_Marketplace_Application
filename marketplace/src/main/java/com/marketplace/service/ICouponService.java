@@ -15,7 +15,7 @@ public interface ICouponService {
     CouponDto getCouponByCode(String code);
     boolean isCouponValid(Long couponId, Long productId);
     boolean isCouponCodeAlreadyUsed(String code);
-    CouponDto applyCouponToProduct(Long couponId, Long productId);
+    CouponDto applyCouponToProduct(Long couponId, Long productId,Long buyerId);
     List<CouponDto> getAllCouponsForASeller(Long sellerId);
     void removeCouponFromProduct(Long couponId, Long productId);
 

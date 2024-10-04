@@ -44,7 +44,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             validationErrors.put(fieldName, errorMessage);
         }
 
-                ErrorResponseDto errorResponseDto = new ErrorResponseDto(
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
                 request.getDescription(false),
                 HttpStatus.BAD_REQUEST,
                 "Validation failed",
@@ -303,7 +303,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
-
     @ExceptionHandler(InvalidLoginException.class)
     public ResponseEntity<ErrorResponseDto> handleInvalidLoginException(InvalidLoginException exception, WebRequest request) {
         ErrorResponseDto errorResponseDto = new ErrorResponseDto(
@@ -317,6 +316,35 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
+    @ExceptionHandler(EmptyCartException.class)
+    public ResponseEntity<ErrorResponse> handleEmptyCartException(EmptyCartException ex) {
+        ErrorResponse error = new ErrorResponse("EMPTY_CART", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 
+    @ExceptionHandler(CartOwnershipException.class)
+    public ResponseEntity<ErrorResponse> handleCartOwnershipException(CartOwnershipException ex) {
+        ErrorResponse error = new ErrorResponse("INVALID_CART_OWNER", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(OrderCreationException.class)
+    public ResponseEntity<ErrorResponse> handleOrderCreationException(OrderCreationException ex) {
+        ErrorResponse error = new ErrorResponse("ORDER_CREATION_FAILED", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    public static class ErrorResponse {
+        private String code;
+        private String message;
+
+        public ErrorResponse(String code, String message) {
+            this.code = code;
+            this.message = message;
+        }
+
+
+    }
 
 }

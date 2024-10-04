@@ -1,6 +1,7 @@
 package com.marketplace.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,6 +17,7 @@ public class Follower {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "buyer_id")
+    @JsonIgnore
     private Buyer buyer;
     @ManyToOne
     @JoinColumn(name = "seller_id")

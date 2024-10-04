@@ -1,9 +1,12 @@
 package com.marketplace.controller;
 
+import com.marketplace.dto.CartItemDto;
 import com.marketplace.enums.OrderStatus;
-import com.marketplace.model.CartItem;
-import com.marketplace.model.Order;
-import com.marketplace.model.ShoppingCart;
+import com.marketplace.enums.PaymentType;
+import com.marketplace.exception.CartOwnershipException;
+import com.marketplace.exception.EmptyCartException;
+import com.marketplace.exception.ResourceNotFoundException;
+import com.marketplace.model.*;
 import com.marketplace.service.IOrderService;
 import com.marketplace.service.impl.ShoppingCartService;
 import com.marketplace.service.paymentService.PaypalService;
@@ -17,26 +20,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ShoppingCartController {
 
-
     private final ShoppingCartService shoppingCartService;
-
-
     private final PaypalService paypalService;
-
-
     private final IOrderService orderService;
-
-
-
 
     // Get or create a shopping cart for a buyer
     @GetMapping("/buyer/{buyerId}")
@@ -46,11 +43,11 @@ public class ShoppingCartController {
     }
 
     // Add an item to the cart
-    @PostMapping("/{cartId}/add-item")
+    @PostMapping("/{cartId}/add-item/{productId}/{quantity}")
     public ResponseEntity<CartItem> addItemToCart(
             @PathVariable Long cartId,
-            @RequestParam Long productId,
-            @RequestParam Integer quantity) {
+            @PathVariable Long productId,
+            @PathVariable Integer quantity) {
         CartItem cartItem = shoppingCartService.addItemToCart(cartId, productId, quantity);
         return ResponseEntity.ok(cartItem);
     }
@@ -63,11 +60,11 @@ public class ShoppingCartController {
     }
 
     // Update the quantity of an item
-    @PutMapping("/{cartId}/update-item/{itemId}")
+    @PutMapping("/{cartId}/update-item/{itemId}/{quantity}")
     public ResponseEntity<CartItem> updateItemQuantity(
             @PathVariable Long cartId,
             @PathVariable Long itemId,
-            @RequestParam Integer quantity) {
+            @PathVariable Integer quantity) {
         shoppingCartService.updateItemQuantity(cartId, itemId, quantity);
         return ResponseEntity.ok().build();
     }
@@ -81,8 +78,8 @@ public class ShoppingCartController {
 
     // Get all items in a cart
     @GetMapping("/{cartId}/items")
-    public ResponseEntity<List<CartItem>> getCartItems(@PathVariable Long cartId) {
-        List<CartItem> cartItems = shoppingCartService.getCartItems(cartId);
+    public ResponseEntity<List<CartItemDto>> getCartItems(@PathVariable Long cartId) {
+        List<CartItemDto> cartItems = shoppingCartService.getCartItems(cartId);
         return ResponseEntity.ok(cartItems);
     }
 
@@ -94,20 +91,60 @@ public class ShoppingCartController {
     }
 
 
-    // Create an order from the cart and initiate payment
-    @PostMapping("/{cartId}/checkout")
+    @PostMapping("/{cartId}/checkout/{buyerId}")
     public ResponseEntity<Map<String, String>> checkoutCart(
             @PathVariable Long cartId,
-            @RequestParam Long buyerId
+            @PathVariable Long buyerId
     ) {
-        // Create the order from the shopping cart
-        Order order = orderService.createOrderFromCart(cartId, buyerId);
-        BigDecimal totalAmount = order.getTotalPrice();
-
-        // Prepare PayPal payment
-        String cancelUrl = "http://localhost:8080/api/cart/payment/cancel";
-        String successUrl = "http://localhost:8080/api/cart/payment/success?orderId=" + order.getId();
         try {
+            // Get the cart
+            ShoppingCart cart = shoppingCartService.getCartById(cartId);
+
+            if (cart.getItems().isEmpty()) {
+                throw new EmptyCartException("The shopping cart is empty");
+            }
+
+            // Create the order from the shopping cart
+            Order order = new Order();
+            order.setBuyer(cart.getBuyer());
+            order.setOrderStatus(OrderStatus.PENDING);
+            order.setOrderDate(LocalDateTime.now());
+
+            // Convert CartItems to OrderItems
+            List<OrderItem> orderItems = cart.getItems().stream()
+                    .map(this::convertCartItemToOrderItem)
+                    .collect(Collectors.toList());
+
+            // Set the order reference for each OrderItem
+            Order finalOrder = order;
+            orderItems.forEach(orderItem -> orderItem.setOrder(finalOrder));
+
+            order.setOrderItems(orderItems);
+            order.setTotalPrice(calculateOrderTotal(cart));
+
+            // Create and set ShipmentDetails
+            ShipmentDetails shipmentDetails = new ShipmentDetails();
+            shipmentDetails.setCarrierName("Default Carrier");
+            shipmentDetails.setTrackingNumber("TBD");
+            shipmentDetails.setShipmentDate(LocalDateTime.now());
+            shipmentDetails.setEstimatedDeliveryDate(LocalDateTime.now().plusDays(7));
+            order.setShipmentDetails(shipmentDetails);
+
+            // Create and set PaymentMethod (PayPal for now)
+            PaymentMethod paymentMethod = new PaymentMethod();
+            paymentMethod.setPaymentType(PaymentType.PAYPAL);
+            paymentMethod.setDetails("PayPal Payment");
+            order.setPaymentMethod(paymentMethod);
+
+            // Save the order
+            order = orderService.saveOrder(order);
+
+            BigDecimal totalAmount = order.getTotalPrice();
+
+            // Prepare PayPal payment
+            String cancelUrl = "http://localhost:8080/api/cart/payment/cancel";
+            String successUrl = "http://localhost:8080/api/cart/payment/success?orderId=" + order.getId();
+
             Payment payment = paypalService.createPayment(
                     totalAmount,
                     "USD",
@@ -118,6 +155,9 @@ public class ShoppingCartController {
                     successUrl
             );
 
+            // Clear the shopping cart after successful payment creation
+            shoppingCartService.clearCart(cartId);
+
             // Return PayPal approval URL
             for (Links links : payment.getLinks()) {
                 if (links.getRel().equals("approval_url")) {
@@ -126,34 +166,66 @@ public class ShoppingCartController {
                     return ResponseEntity.ok(response);
                 }
             }
+            // If no approval URL is found
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No approval URL found"));
+
+        } catch (EmptyCartException e) {
+            // Handle case where the cart is empty
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (CartOwnershipException e) {
+            // Handle case where the cart does not belong to the buyer
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (ResourceNotFoundException e) {
+            // Handle case where a resource (order, cart, etc.) was not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         } catch (PayPalRESTException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Payment creation failed"));
+            // Handle PayPal payment creation failure
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Payment creation failed"));
+        } catch (Exception e) {
+            // Handle unexpected errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred"));
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "No approval URL found"));
     }
 
-    // PayPal payment success handler
-    @GetMapping("/payment/success")
-    public ResponseEntity<String> paymentSuccess(@RequestParam("orderId") Long orderId, @RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId) {
+    private OrderItem convertCartItemToOrderItem(CartItem cartItem) {
+        OrderItem orderItem = new OrderItem();
+        orderItem.setProduct(cartItem.getProduct());
+        orderItem.setSeller(cartItem.getProduct().getSeller());
+        orderItem.setQuantity(cartItem.getQuantity());
+        orderItem.setPrice(cartItem.getProduct().getPrice());
+        return orderItem;
+    }
+
+    private BigDecimal calculateOrderTotal(ShoppingCart cart) {
+        return cart.getItems().stream()
+                .map(cartItem -> cartItem.getProduct().getPrice().multiply(new BigDecimal(cartItem.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+
+    // Retrieve cart ID by buyer ID
+    @GetMapping("/buyer/{buyerId}/cart-id")
+    public ResponseEntity<Long> getCartIdByBuyerId(@PathVariable Long buyerId) {
         try {
-            Payment payment = paypalService.executePayment(paymentId, payerId);
-            if ("approved".equals(payment.getState())) {
-                // Payment is successful, handle order completion here
-                Order order = orderService.getOrderById(orderId);
-                order.setOrderStatus(OrderStatus.COMPLETED);
-                orderService.saveOrder(order);
-                return ResponseEntity.ok("Payment successful and order completed");
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment failed");
-            }
-        } catch (PayPalRESTException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Payment execution failed");
+            Long cartId = shoppingCartService.getCartIdByBuyerId(buyerId);
+            return ResponseEntity.ok(cartId);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
-    // PayPal payment cancel handler
-    @GetMapping("/payment/cancel")
-    public ResponseEntity<String> paymentCancel() {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment was canceled");
+
+    // Endpoint to check if a product exists in the cart
+    @GetMapping("/{cartId}/contains-product/{productId}")
+    public ResponseEntity<Boolean> hasProductInCart(@PathVariable Long cartId, @PathVariable Long productId) {
+        boolean hasProduct = shoppingCartService.hasProductInCart(cartId, productId);
+        return ResponseEntity.ok(hasProduct);
     }
+
 }

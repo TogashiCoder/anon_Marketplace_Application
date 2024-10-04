@@ -7,11 +7,9 @@ import com.marketplace.exception.InvalidLoginException;
 import com.marketplace.mapper.AdminMapper;
 import com.marketplace.mapper.BuyerMapper;
 import com.marketplace.mapper.SellerMapper;
+import com.marketplace.model.ShoppingCart;
 import com.marketplace.model.User;
-import com.marketplace.repository.AdminRepository;
-import com.marketplace.repository.BuyerRepository;
-import com.marketplace.repository.SellerRepository;
-import com.marketplace.repository.UserRepository;
+import com.marketplace.repository.*;
 import com.marketplace.service.IAdminService;
 import com.marketplace.service.IBuyerService;
 import com.marketplace.service.ISellerService;
@@ -46,6 +44,8 @@ public class AuthenticationService {
     private final SellerMapper sellerMapper;
     private final BuyerMapper buyerMapper;
     private final AdminMapper adminMapper;
+    private final ShoppingCartRepository shoppingCartRepository;
+
 
 
 
@@ -73,6 +73,14 @@ public class AuthenticationService {
         ResponseEntity<BuyerDto> response = buyerService.registerBuyer(buyerDto, profileImage);
         if(response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             BuyerDto savedBuyerDto = response.getBody();
+            //create a ShoppingCart for the new Buyer
+            // Create a new ShoppingCart for the buyer
+            ShoppingCart shoppingCart = new ShoppingCart();
+            shoppingCart.setBuyer(buyerMapper.toEntity(savedBuyerDto));
+            shoppingCart.setIsActive(true);
+            shoppingCartRepository.save(shoppingCart);
+
+
             String jwt = jwtService.generateToken(buyerMapper.toEntity(savedBuyerDto));
             return new AuthenticationResponse(jwt, "Buyer registration was successful", savedBuyerDto.getId());
         }else{
