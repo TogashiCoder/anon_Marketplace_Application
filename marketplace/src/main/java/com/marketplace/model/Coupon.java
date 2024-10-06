@@ -28,4 +28,9 @@ public class Coupon {
     private List<Product> products = new ArrayList<>();
     @OneToMany(mappedBy = "coupon", cascade = CascadeType.ALL)
     private List<CouponUsage> couponUsages = new ArrayList<>();
+
+    //update coupon ***
+    @ManyToOne
+    @JoinColumn(name = "seller_id")
+    private Seller seller;
 }

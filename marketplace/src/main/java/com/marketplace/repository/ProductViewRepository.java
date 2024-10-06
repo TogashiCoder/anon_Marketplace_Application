@@ -14,4 +14,7 @@ public interface ProductViewRepository extends JpaRepository<ProductView, Long> 
     long countByProductIdAndViewedAtBetween(Long productId, LocalDateTime start, LocalDateTime end);
     List<ProductView> findByProductIdOrderByViewedAtDesc(Long productId);
 
+
+
+
 }

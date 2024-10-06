@@ -28,5 +28,14 @@ public class CartItem {
     private Integer quantity;
     private BigDecimal price;
 
-    //
+    //THE update
+    @ManyToOne
+    @JoinColumn(name = "applied_coupon_id")
+    private Coupon appliedCoupon;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discountedPrice;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal totalPrice;
 }

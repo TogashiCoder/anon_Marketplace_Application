@@ -1,5 +1,6 @@
 package com.marketplace.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.marketplace.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,8 +10,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Setter @Getter @ToString
-@AllArgsConstructor @NoArgsConstructor
+@Setter
+@Getter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "customer_order")
 public class Order {

@@ -67,6 +67,9 @@ public class SecurityConfig {
 
                                 .requestMatchers("/api/cart/**").hasAuthority("BUYER")
                                 .requestMatchers("/api/coupons/**").permitAll()
+                                .requestMatchers("/api/orders/**").permitAll()
+                                .requestMatchers("/api/ordersConfirmation/**").permitAll()
+                                .requestMatchers("/api/product-stock/**").permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )

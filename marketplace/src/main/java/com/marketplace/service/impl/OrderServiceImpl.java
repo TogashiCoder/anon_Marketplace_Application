@@ -7,9 +7,12 @@ import com.marketplace.repository.ShoppingCartRepository;
 import com.marketplace.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.marketplace.dto.OrderDisplayDto;
+import com.marketplace.dto.OrderSummaryResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,6 +92,125 @@ public class OrderServiceImpl implements IOrderService {
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+    }
+
+
+
+
+
+    //new
+    @Override
+    public OrderSummaryResponse getOrdersSummary() {
+        List<Order> orders = orderRepository.findAll();
+
+        OrderSummaryResponse summary = new OrderSummaryResponse();
+        summary.setTotalOrders((long) orders.size());
+        summary.setTotalRevenue(calculateTotalRevenue(orders));
+        summary.setOrders(orders.stream()
+                .map(this::mapToOrderDisplayDto)
+                .collect(Collectors.toList()));
+
+        return summary;
+    }
+
+    @Override
+    public List<OrderDisplayDto> getAllOrders() {
+        return orderRepository.findAll().stream()
+                .map(this::mapToOrderDisplayDto)
+                .collect(Collectors.toList());
+    }
+
+
+
+    private BigDecimal calculateTotalRevenue(List<Order> orders) {
+        return orders.stream()
+                .map(Order::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+
+    @Override
+    public OrderSummaryResponse getSellerOrdersSummary(Long sellerId) {
+        List<Order> sellerOrders = getOrdersForSeller(sellerId);
+
+        OrderSummaryResponse summary = new OrderSummaryResponse();
+        summary.setTotalOrders((long) sellerOrders.size());
+        summary.setTotalRevenue(calculateSellerTotalRevenue(sellerOrders));
+        summary.setOrders(sellerOrders.stream()
+                .map(this::mapToOrderDisplayDto)
+                .collect(Collectors.toList()));
+
+        return summary;
+    }
+
+    @Override
+    public List<OrderDisplayDto> getSellerOrders(Long sellerId) {
+        return getOrdersForSeller(sellerId).stream()
+                .map(this::mapToOrderDisplayDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateSellerOrderStatus(Long sellerId, Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        // Verify the order belongs to the seller
+        boolean isSellerOrder = order.getOrderItems().stream()
+                .anyMatch(item -> item.getSeller().getId().equals(sellerId));
+
+        if (!isSellerOrder) {
+            throw new IllegalArgumentException("Order does not belong to seller");
+        }
+
+        try {
+            OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
+            order.setOrderStatus(orderStatus);
+            orderRepository.save(order);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid order status: " + status);
+        }
+    }
+
+    private BigDecimal calculateSellerTotalRevenue(List<Order> orders) {
+        return orders.stream()
+                .flatMap(order -> order.getOrderItems().stream())
+                .map(item -> item.getPrice().multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private OrderDisplayDto mapToOrderDisplayDto(Order order) {
+        OrderDisplayDto dto = new OrderDisplayDto();
+        dto.setId(order.getId().toString());
+        dto.setCustomer(order.getBuyer().getFirstname() + " " + order.getBuyer().getLastname());
+        dto.setDate(order.getOrderDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        dto.setTotal(order.getTotalPrice());
+        dto.setStatus(formatOrderStatus(order.getOrderStatus())); // Use helper method to format status
+        return dto;
+    }
+    private String formatOrderStatus(OrderStatus status) {
+        // Convert enum to properly capitalized string to match frontend
+        return status.toString().charAt(0) +
+                status.toString().substring(1).toLowerCase();
+    }
+
+
+    private List<Order> getOrdersForSeller(Long sellerId) {
+        return orderRepository.findAll().stream()
+                .filter(order -> order.getOrderItems().stream()
+                        .anyMatch(item -> item.getSeller().getId().equals(sellerId)))
+                .collect(Collectors.toList());
+    }
+
+
+
+    @Override
+    public boolean hasBuyerPurchasedProduct(Long buyerId, Long productId) {
+        List<Order> buyerOrders = orderRepository.findByBuyerId(buyerId);
+
+        return buyerOrders.stream()
+                .flatMap(order -> order.getOrderItems().stream())
+                .anyMatch(orderItem -> orderItem.getProduct().getId().equals(productId));
     }
 
 

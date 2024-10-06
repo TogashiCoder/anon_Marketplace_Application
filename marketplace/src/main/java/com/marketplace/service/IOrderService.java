@@ -1,8 +1,11 @@
 package com.marketplace.service;
 
+import com.marketplace.dto.OrderDisplayDto;
+import com.marketplace.dto.OrderSummaryResponse;
 import com.marketplace.model.Order;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface IOrderService {
     // Method to create an order from a cart
@@ -18,5 +21,17 @@ public interface IOrderService {
     BigDecimal calculateOrderTotal(Long cartId);
 
     Order getOrderById(Long orderId);
+
+
+    OrderSummaryResponse getOrdersSummary();
+    List<OrderDisplayDto> getAllOrders();
+    OrderSummaryResponse getSellerOrdersSummary(Long sellerId);
+    List<OrderDisplayDto> getSellerOrders(Long sellerId);
+    void updateSellerOrderStatus(Long sellerId, Long orderId, String status);
+
+
+
+    boolean hasBuyerPurchasedProduct(Long buyerId, Long productId);
+
 
 }

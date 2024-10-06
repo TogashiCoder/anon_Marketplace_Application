@@ -46,9 +46,17 @@ public class CouponDto {
    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer redeemCount;
 
-   @JsonIgnore
+   // **@JsonIgnore
+   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
    private List<Long> productIds = new ArrayList<>();
 
     @JsonIgnore
     private List<CouponUsage> couponUsages = new ArrayList<>();
+
+
+    // update ***
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long sellerId;
+
+
 }

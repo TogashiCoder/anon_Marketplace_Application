@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -91,6 +93,53 @@ public class IProductViewsImpl implements IProductViews {
                 .stream()
                 .map(productViewMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+
+
+
+    @Override
+    public Map<String, List<Map<String, Object>>> getProductViewStatsForSeller(Long sellerId, LocalDate date) {
+        List<Product> sellerProducts = productRepository.findBySellerId(sellerId);
+
+        Map<String, List<Map<String, Object>>> result = new HashMap<>();
+
+        result.put("daily", getStatsForPeriod(sellerProducts, date, PeriodType.DAILY));
+        result.put("weekly", getStatsForPeriod(sellerProducts, date.minusDays(6), PeriodType.WEEKLY));
+        result.put("monthly", getStatsForPeriod(sellerProducts, date.withDayOfMonth(1), PeriodType.MONTHLY));
+
+        return result;
+    }
+
+    private List<Map<String, Object>> getStatsForPeriod(List<Product> products, LocalDate startDate, PeriodType periodType) {
+        return products.stream().map(product -> {
+            Long productId = product.getId();
+            String productName = product.getName();
+            long views;
+
+            switch (periodType) {
+                case DAILY:
+                    views = getDailyViews(productId, startDate);
+                    break;
+                case WEEKLY:
+                    views = getWeeklyViews(productId, startDate);
+                    break;
+                case MONTHLY:
+                    views = getMonthlyViews(productId, startDate);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid period type");
+            }
+
+            Map<String, Object> stat = new HashMap<>();
+            stat.put("name", productName);
+            stat.put("value", views);
+            return stat;
+        }).collect(Collectors.toList());
+    }
+
+    private enum PeriodType {
+        DAILY, WEEKLY, MONTHLY
     }
 
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/productsV")
@@ -84,6 +85,24 @@ public class ProductViewController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/stats/{sellerId}/{date}")
+    public ResponseEntity<Map<String, List<Map<String, Object>>>> getProductViewStats(
+            @PathVariable Long sellerId,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        Map<String, List<Map<String, Object>>> stats = productViewsService.getProductViewStatsForSeller(sellerId, date);
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/stats/{sellerId}")
+    public ResponseEntity<Map<String, List<Map<String, Object>>>> getProductViewStatsCurrentDate(
+            @PathVariable Long sellerId) {
+        LocalDate currentDate = LocalDate.now();
+        Map<String, List<Map<String, Object>>> stats = productViewsService.getProductViewStatsForSeller(sellerId, currentDate);
+        return ResponseEntity.ok(stats);
+    }
+
 
 
 }

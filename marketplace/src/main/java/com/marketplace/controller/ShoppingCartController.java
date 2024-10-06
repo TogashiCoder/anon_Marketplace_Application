@@ -143,7 +143,8 @@ public class ShoppingCartController {
 
             // Prepare PayPal payment
             String cancelUrl = "http://localhost:8080/api/cart/payment/cancel";
-            String successUrl = "http://localhost:8080/api/cart/payment/success?orderId=" + order.getId();
+            String successUrl = "http://localhost:4200/buyer/order-confirmation/"+order.getId();
+
 
             Payment payment = paypalService.createPayment(
                     totalAmount,

@@ -34,14 +34,19 @@ public class ICouponServiceImpl implements ICouponService {
     private final CartItemRepository cartItemRepository;
 
     @Override
-    public CouponDto createCoupon(CouponDto couponDto) {
+    public CouponDto createCoupon(CouponDto couponDto, Long sellerId) {
         if (isCouponCodeAlreadyUsed(couponDto.getCode())) {
             logger.error("Coupon creation failed: Coupon code {} is already used.", couponDto.getCode());
             throw new CouponAlreadyUsedException("Coupon code already in use");
         }
 
+        Seller seller = sellerRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found with id: ", "SellerId", sellerId.toString()));
+
         Coupon coupon = couponMapper.toEntity(couponDto);
-        coupon.setRedeemCount(0); // Initialize redeem count
+        coupon.setSeller(seller);
+        coupon.setRedeemCount(0);
+
         try {
             Coupon savedCoupon = couponRepository.save(coupon);
             logger.info("Coupon created successfully: {}", savedCoupon.getCode());
@@ -74,7 +79,7 @@ public class ICouponServiceImpl implements ICouponService {
         Coupon coupon = couponRepository.findByCode(code)
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found with code: " + code));
 
-        dissociateCouponFromProducts(coupon);
+        removeCouponFromProducts(coupon);
 
         try {
             couponRepository.deleteById(coupon.getId());
@@ -90,7 +95,7 @@ public class ICouponServiceImpl implements ICouponService {
         Coupon coupon = couponRepository.findById(id)
                 .orElseThrow(() -> new CouponNotFoundException("Coupon not found with id: " + id));
 
-        dissociateCouponFromProducts(coupon);
+        removeCouponFromProducts(coupon);
 
         try {
             couponRepository.deleteById(id);
@@ -101,9 +106,8 @@ public class ICouponServiceImpl implements ICouponService {
         }
     }
 
-    private void dissociateCouponFromProducts(Coupon coupon) {
-        List<Product> associatedProducts = productRepository.findByCoupon(coupon);
-        for (Product product : associatedProducts) {
+    private void removeCouponFromProducts(Coupon coupon) {
+        for (Product product : coupon.getProducts()) {
             product.setCoupon(null);
             productRepository.save(product);
         }
@@ -119,33 +123,27 @@ public class ICouponServiceImpl implements ICouponService {
     }
 
     @Override
-    public List<CouponDto> getAllCouponsForASeller(Long sellerId) {
+    public List<CouponDto> getAllCouponsBySeller(Long sellerId) {
         Seller seller = sellerRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found with id: ", "SellerId", sellerId.toString()));
 
-        return seller.getProducts().stream()
-                .map(Product::getCoupon)
-                .filter(coupon -> coupon != null)
-                .distinct()
+        return seller.getCoupons().stream()
                 .map(couponMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void removeCouponFromProduct(Long couponId, Long productId) {
-        Coupon coupon = couponRepository.findById(couponId)
-                .orElseThrow(() -> new CouponNotFoundException("Coupon not found with id: " + couponId));
-
+    public void removeCouponFromProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: ", "ProductId", productId.toString()));
 
-        if (product.getCoupon() != null && product.getCoupon().equals(coupon)) {
+        if (product.getCoupon() != null) {
             product.setCoupon(null);
             productRepository.save(product);
-            logger.info("Coupon {} removed from product {}", couponId, productId);
+            logger.info("Coupon removed from product {}", productId);
         } else {
-            logger.warn("Coupon {} is not applied to product {}", couponId, productId);
-            throw new CouponNotAppliedException("Coupon is not applied to this product");
+            logger.warn("No coupon applied to product {}", productId);
+            throw new CouponNotAppliedException("No coupon is applied to this product");
         }
     }
 
@@ -157,35 +155,6 @@ public class ICouponServiceImpl implements ICouponService {
         logger.info("Coupon retrieved successfully: Code {}", code);
         return couponMapper.toDto(coupon);
     }
-
-//    @Override
-//    public boolean isCouponValid(Long couponId, Long productId) {
-//        LocalDate currentDate = LocalDate.now();
-//
-//        try {
-//            Coupon coupon = couponRepository.findById(couponId)
-//                    .orElseThrow(() -> new ResourceNotFoundException("Coupon not found with id: ", "CouponId", couponId.toString()));
-//
-//            if (currentDate.isBefore(coupon.getStartDate()) || currentDate.isAfter(coupon.getEndDate())) {
-//                return false;
-//            }
-//
-//            if (coupon.getMaxRedemptions() != null && coupon.getRedeemCount() >= coupon.getMaxRedemptions()) {
-//                return false;
-//            }
-//
-//            boolean isApplicable = coupon.getProducts().stream()
-//                    .anyMatch(product -> product.getId().equals(productId));
-//
-//            return isApplicable;
-//
-//        } catch (ResourceNotFoundException e) {
-//            return false;
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
-
 
     @Override
     public boolean isCouponValid(Long couponId, Long productId) {
@@ -223,40 +192,6 @@ public class ICouponServiceImpl implements ICouponService {
         return couponRepository.existsByCode(code);
     }
 
-
-
-
-//    @Override
-//    public CouponDto applyCouponToProduct(Long couponId, Long productId) {
-//        Coupon coupon = couponRepository.findById(couponId)
-//                .orElseThrow(() -> new CouponNotFoundException("Coupon not found with id: " + couponId));
-//
-//        Product product = productRepository.findById(productId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: ", "ProductId", productId.toString()));
-//
-//        if (LocalDate.now().isAfter(coupon.getEndDate())) {
-//            throw new CouponExpiredException("Coupon has expired and cannot be applied.");
-//        }
-//
-//        if (coupon.getMaxRedemptions() != null && coupon.getRedeemCount() >= coupon.getMaxRedemptions()) {
-//            throw new CouponLimitReachedException("Coupon redemption limit has been reached.");
-//        }
-//
-//        if (product.getCoupon() != null && product.getCoupon().getId().equals(couponId)) {
-//            throw new CouponAlreadyAppliedException("This coupon is already applied to the product.");
-//        }
-//
-//        product.setCoupon(coupon);
-//        productRepository.save(product);
-//
-//        coupon.setRedeemCount(coupon.getRedeemCount() + 1);
-//        couponRepository.save(coupon);
-//
-//        logger.info("Coupon {} applied to product {}", couponId, productId);
-//        return couponMapper.toDto(coupon);
-//    }
-
-
     @Transactional
     @Override
     public CouponDto applyCouponToProduct(Long couponId, Long productId, Long buyerId) {
@@ -269,34 +204,27 @@ public class ICouponServiceImpl implements ICouponService {
         Buyer buyer = buyerRepository.findById(buyerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Buyer not found with id: ", "BuyerId", buyerId.toString()));
 
-        // Validate coupon
         validateCoupon(coupon, product, buyer);
 
-        // Get buyer's shopping cart
         ShoppingCart shoppingCart = shoppingCartRepository.findByBuyerAndIsActiveTrue(buyer)
                 .orElseThrow(() -> new ResourceNotFoundException("Active shopping cart not found for buyer: ", "BuyerId", buyerId.toString()));
 
-        // Find the cart item for this product
         CartItem cartItem = shoppingCart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found in cart", "ProductId", productId.toString()));
 
-        // Apply coupon to product
         product.setCoupon(coupon);
         productRepository.save(product);
 
-        // Calculate and set discounted price
         BigDecimal discountMultiplier = BigDecimal.ONE.subtract(
                 BigDecimal.valueOf(coupon.getDiscountPercentage()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
         );
         BigDecimal discountedPrice = product.getPrice().multiply(discountMultiplier).setScale(2, RoundingMode.HALF_UP);
 
-        // Update cart item price
         cartItem.setPrice(discountedPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity())));
         cartItemRepository.save(cartItem);
 
-        // Create and save coupon usage
         CouponUsage couponUsage = new CouponUsage();
         couponUsage.setCoupon(coupon);
         couponUsage.setProduct(product);
@@ -304,7 +232,6 @@ public class ICouponServiceImpl implements ICouponService {
         couponUsage.setUsed(true);
         couponUsageRepository.save(couponUsage);
 
-        // Increment redeem count
         coupon.setRedeemCount(coupon.getRedeemCount() + 1);
         Coupon updatedCoupon = couponRepository.save(coupon);
 
@@ -326,7 +253,6 @@ public class ICouponServiceImpl implements ICouponService {
             throw new CouponLimitReachedException("Coupon redemption limit has been reached");
         }
 
-        // Check if buyer has already used this coupon for this product
         boolean alreadyUsed = couponUsageRepository.existsByCouponAndBuyerAndProduct(coupon, buyer, product);
         if (alreadyUsed) {
             throw new CouponAlreadyUsedException("You have already used this coupon for this product");
@@ -337,4 +263,26 @@ public class ICouponServiceImpl implements ICouponService {
         }
     }
 
+    @Transactional
+    @Override
+    public void removeCouponFromCartItem(Long cartItemId) {
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found with id: ", "CartItemId", cartItemId.toString()));
+
+        if (cartItem.getAppliedCoupon() == null) {
+            throw new InvalidCouponException("No coupon applied to this cart item.");
+        }
+
+        Coupon coupon = cartItem.getAppliedCoupon();
+        cartItem.setAppliedCoupon(null);
+        cartItem.setDiscountedPrice(null);
+        cartItem.setTotalPrice(cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+        cartItemRepository.save(cartItem);
+
+        coupon.setRedeemCount(coupon.getRedeemCount() - 1);
+        couponRepository.save(coupon);
+
+        logger.info("Coupon removed from cart item {}. Updated redeem count for coupon {}: {}",
+                cartItemId, coupon.getId(), coupon.getRedeemCount());
+    }
 }
