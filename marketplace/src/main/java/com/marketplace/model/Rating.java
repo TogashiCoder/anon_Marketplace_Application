@@ -21,11 +21,22 @@ public class Rating {
     @JsonBackReference
     private Product product;
 
+    @Column(length = 1000)
+    private String comment;
+
     @ManyToOne
     @JoinColumn(name = "seller_id")
     private Seller seller;
 
+    @ManyToOne
+    @JoinColumn(name = "buyer_id")
+    private Buyer buyer;
+
     private LocalDateTime createdAt;
+
+
+
+
 
     @PrePersist
     protected void onCreate() {

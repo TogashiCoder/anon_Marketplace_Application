@@ -2,6 +2,7 @@ package com.marketplace.controller;
 
 import com.marketplace.dto.ProductDto;
 import com.marketplace.dto.RatingDTO;
+import com.marketplace.dto.ReviewDto;
 import com.marketplace.service.IRatingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -84,6 +85,18 @@ public class RatingController {
     public ResponseEntity<List<ProductDto>> getMostFavoritedProducts(@RequestParam(defaultValue = "10") int limit) {
         List<ProductDto> mostFavoritedProducts = ratingService.getMostFavoritedProducts(limit);
         return ResponseEntity.ok(mostFavoritedProducts);
+    }
+
+    @GetMapping("/can-rate/product/{productId}/buyer/{buyerId}")
+    public ResponseEntity<Boolean> canRateProduct(@PathVariable Long productId, @PathVariable Long buyerId) {
+        boolean canRate = ratingService.canRateProduct(productId, buyerId);
+        return ResponseEntity.ok(canRate);
+    }
+
+    @GetMapping("/reviews/product/{productId}")
+    public ResponseEntity<List<ReviewDto>> getReviewsForProduct(@PathVariable Long productId) {
+        List<ReviewDto> reviews = ratingService.getReviewsForProduct(productId);
+        return ResponseEntity.ok(reviews);
     }
 
 }

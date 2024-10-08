@@ -2,6 +2,7 @@ package com.marketplace.service;
 
 import com.marketplace.dto.ProductDto;
 import com.marketplace.dto.RatingDTO;
+import com.marketplace.dto.ReviewDto;
 import com.marketplace.model.Rating;
 
 import java.math.BigDecimal;
@@ -19,5 +20,13 @@ public interface IRatingService {
     List<ProductDto> getBestRatedProducts(int limit);
     List<ProductDto> getMostViewedProducts(int limit);
     List<ProductDto> getMostFavoritedProducts(int limit);
+
+
+    boolean canRateProduct(Long productId, Long buyerId);
+    public List<ReviewDto> getReviewsForProduct(Long productId);
+
+
+
+
 
 }

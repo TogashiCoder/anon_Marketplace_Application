@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -36,4 +37,8 @@ public class Buyer extends User{
     @OneToOne(mappedBy = "buyer")
     @JsonManagedReference
     private ShoppingCart shoppingCart;
+
+    @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Rating> ratings = new ArrayList<>();
+
 }

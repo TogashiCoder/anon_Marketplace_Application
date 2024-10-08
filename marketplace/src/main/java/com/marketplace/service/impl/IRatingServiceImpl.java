@@ -2,14 +2,18 @@ package com.marketplace.service.impl;
 
 import com.marketplace.dto.ProductDto;
 import com.marketplace.dto.RatingDTO;
+import com.marketplace.dto.ReviewDto;
 import com.marketplace.dto.SellerDto;
 import com.marketplace.exception.ResourceNotFoundException;
+import com.marketplace.exception.ReviewNotFoundException;
 import com.marketplace.mapper.ProductMapper;
 import com.marketplace.mapper.RatingMapper;
 import com.marketplace.mapper.SellerMapper;
+import com.marketplace.model.Buyer;
 import com.marketplace.model.Product;
 import com.marketplace.model.Rating;
 import com.marketplace.model.Seller;
+import com.marketplace.repository.BuyerRepository;
 import com.marketplace.repository.ProductRepository;
 import com.marketplace.repository.RatingRepository;
 import com.marketplace.repository.SellerRepository;
@@ -27,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,6 +43,7 @@ public class IRatingServiceImpl implements IRatingService {
     private final RatingRepository ratingRepository;
     private final ProductRepository productRepository;
     private final SellerRepository sellerRepository;
+    private final BuyerRepository buyerRepository;
     private final RatingMapper ratingMapper;
     private final ProductMapper productMapper;
 
@@ -50,7 +56,10 @@ public class IRatingServiceImpl implements IRatingService {
         Seller seller = sellerRepository.findById(ratingDTO.getSellerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Seller", "id", ratingDTO.getSellerId().toString()));
 
-        Rating rating = RatingMapper.toEntity(ratingDTO, product, seller);
+        Buyer buyer = buyerRepository.findById(ratingDTO.getBuyerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Buyer", "id", ratingDTO.getBuyerId().toString()));
+
+        Rating rating = RatingMapper.toEntity(ratingDTO, product, seller,buyer);
         Rating savedRating = ratingRepository.save(rating);
         return RatingMapper.toDTO(savedRating);
     }
@@ -167,5 +176,47 @@ public class IRatingServiceImpl implements IRatingService {
                 .map(productMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+
+
+    @Override
+    public boolean canRateProduct(Long productId, Long buyerId) {
+        Optional<Rating> existingRating = ratingRepository.findByProductIdAndBuyerId(productId, buyerId);
+        return existingRating.isEmpty();
+    }
+
+
+
+    @Override
+    public List<ReviewDto> getReviewsForProduct(Long productId) {
+        List<ReviewDto> reviewDtos = new ArrayList<>();
+        try {
+            List<Rating> ratings = ratingRepository.findAllByProductId(productId);
+
+            if (ratings.isEmpty()) {
+                throw new ReviewNotFoundException("No reviews found for product with ID: " + productId);
+            }
+
+            for (Rating rating : ratings) {
+                ReviewDto reviewDto = new ReviewDto();
+                reviewDto.setProductName(rating.getProduct().getName());
+                reviewDto.setBuyerName(rating.getBuyer().getFirstname() + " " + rating.getBuyer().getLastname());
+                reviewDto.setBuyerProfilImageUrl(rating.getBuyer().getProfileImage().getImageUrl());
+                reviewDto.setValue(rating.getValue());
+                reviewDto.setComment(rating.getComment());
+                reviewDto.setCreatedAt(rating.getCreatedAt());
+
+                reviewDtos.add(reviewDto);
+            }
+
+        } catch (ReviewNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ReviewNotFoundException("An error occurred while fetching reviews for product with ID: " + productId, e);
+        }
+        return reviewDtos;
+    }
+
+
 
 }
