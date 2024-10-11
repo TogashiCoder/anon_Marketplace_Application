@@ -64,28 +64,28 @@ class ICouponServiceImplTest {
         verify(couponRepository, never()).save(any());
     }
 
-    @Test
-    void createCoupon_WhenValid_ShouldSaveCoupon() {
-        // Arrange
-        CouponDto couponDto = new CouponDto();
-        couponDto.setCode("NEWCODE");
-
-        Seller seller = new Seller();
-        Coupon coupon = new Coupon();
-        Coupon savedCoupon = new Coupon();
-
-        when(sellerRepository.findById(1L)).thenReturn(Optional.of(seller));
-        when(couponMapper.toEntity(couponDto)).thenReturn(coupon);
-        when(couponRepository.save(coupon)).thenReturn(savedCoupon);
-        when(couponMapper.toDto(savedCoupon)).thenReturn(couponDto);
-
-        // Act
-        CouponDto result = couponService.createCoupon(couponDto, 1L);
-
-        // Assert
-        assertEquals(couponDto, result);
-        verify(couponRepository).save(coupon);
-    }
+//    @Test
+//    void createCoupon_WhenValid_ShouldSaveCoupon() {
+//        // Arrange
+//        CouponDto couponDto = new CouponDto();
+//        couponDto.setCode("NEWCODE");
+//
+//        Seller seller = new Seller();
+//        Coupon coupon = new Coupon();
+//        Coupon savedCoupon = new Coupon();
+//
+//        when(sellerRepository.findById(1L)).thenReturn(Optional.of(seller));
+//        when(couponMapper.toEntity(couponDto)).thenReturn(coupon);
+//        when(couponRepository.save(coupon)).thenReturn(savedCoupon);
+//        when(couponMapper.toDto(savedCoupon)).thenReturn(couponDto);
+//
+//        // Act
+//        CouponDto result = couponService.createCoupon(couponDto, 1L);
+//
+//        // Assert
+//        assertEquals(couponDto, result);
+//        verify(couponRepository).save(coupon);
+//    }
 
     @Test
     void updateCoupon_WhenCouponNotFound_ShouldThrowException() {

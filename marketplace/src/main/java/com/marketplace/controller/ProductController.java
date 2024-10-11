@@ -115,5 +115,11 @@ public class ProductController {
         return productService.getAllProductsWithoutCoupon();
     }
 
+    @GetMapping("/category/{id}/count")
+    public ResponseEntity<Integer> getProductCountByCategory(@PathVariable Long id) {
+        return productService.getProductCountByCategory(id);
+    }
+
+
 
 }

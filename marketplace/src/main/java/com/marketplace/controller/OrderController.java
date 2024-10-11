@@ -63,4 +63,14 @@ public class OrderController {
         return ResponseEntity.ok(hasPurchased);
     }
 
+
+    @GetMapping("/count/orderNumber/by/seller/{sellerId}")
+    public ResponseEntity<Integer> getOrderNumberBySellerId(@PathVariable Long sellerId) {
+        Integer count = orderService.getTotalOrderNumberForSeller(sellerId);
+        return ResponseEntity.ok(count);
+    }
+
+
+
+
 }

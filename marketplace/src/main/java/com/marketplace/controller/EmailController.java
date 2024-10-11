@@ -23,7 +23,7 @@ public class EmailController {
     public String sendEmail() {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo("imaneboucetta69@gmail.com");
+            message.setTo("d@gmail.com");
             message.setSubject("From Taoufik");
             message.setText("Hello FatGirl this is a message from Programer Taoufik");
             mailSender.send(message);
@@ -41,7 +41,7 @@ public class EmailController {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setFrom("ibrahimsilver007@gmail.com");
-            helper.setTo("imaneboucetta69@gmail.com");
+            helper.setTo("d@gmail.com");
             helper.setSubject("Java email with attachment | From GC");
             helper.setText("Please find the attached documents below");
 

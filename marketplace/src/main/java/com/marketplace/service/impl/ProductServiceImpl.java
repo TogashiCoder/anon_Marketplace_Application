@@ -105,18 +105,12 @@ public class ProductServiceImpl implements IProductService {
         // Map the product entity to ProductDto
         ProductDto productDto = productMapper.toDto(product);
 
+        productDto.setCategoryName(product.getCategory().getName());
+
         return ResponseEntity.ok(productDto);
     }
 
-//    @Override
-//    public ResponseEntity<List<ProductDto>> getAllProducts() {
-//        List<Product> products = productRepository.findAll();
-//        List<ProductDto> productDtos = products.stream()
-//                .map(productMapper::toDto)
-//                .collect(Collectors.toList());
-//
-//        return ResponseEntity.ok(productDtos);
-//    }
+
 
     @Override
     public ResponseEntity<List<ProductDto>> getAllProducts() {
@@ -158,11 +152,18 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public ResponseEntity<List<ProductDto>> getAllProductsBySellerId(Long sellerId) {
         List<Product> products = productRepository.findBySellerId(sellerId);
+
+        if (products.isEmpty()) {
+            throw new ResourceNotFoundException("Product", "sellerId", sellerId.toString());
+        }
+
         List<ProductDto> productDtos = products.stream()
                 .map(productMapper::toDto)
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(productDtos);
     }
+
 
     @Override
     public ResponseEntity<List<ProductDto>> getAllProductsWithoutCoupon() {
@@ -232,4 +233,17 @@ public class ProductServiceImpl implements IProductService {
 
         return ResponseEntity.ok(updatedProductDto);
     }
+
+
+
+
+    @Override
+    public ResponseEntity<Integer> getProductCountByCategory(Long categoryId) {
+        int productCount = productRepository.countByCategoryId(categoryId);
+        return ResponseEntity.ok(productCount);
+    }
+
+
+
+
 }

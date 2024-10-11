@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .order-details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .product-list {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .product-list th, .product-list td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .product-list th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .total {
+            font-weight: bold;
+            text-align: right;
+            font-size: 18px;
+            margin-top: 15px;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 0 0 8px 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Thank you for your order!</h1>
+    </div>
+    <div class="content">
+        <p>Dear ${buyerName},</p>
+        <p>We appreciate your order and your trust! Your order has been successfully placed and is being processed.</p>
+        <div class="order-details">
+            <h2>Order Details:</h2>
+            <p><strong>Order ID:</strong> ${orderId}</p>
+            <p><strong>Order Date:</strong> ${orderDate}</p>
+            <p><strong>Order Status:</strong> ${orderStatus}</p>
+            <p><strong>Payment Method:</strong> ${paymentMethod}</p>
+        </div>
+        <h3>Ordered Items:</h3>
+        <table class="product-list">
+            <thead>
+            <tr>
+                <th>Product</th>
+                <th>Image</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+            </tr>
+            </thead>
+            <tbody>
+            ${orderItems}
+            </tbody>
+        </table>
+        <p class="total">Total Amount: $${totalAmount}</p>
+        <div class="order-details">
+            <h3>Shipping Details:</h3>
+            <p><strong>Shipping Address:</strong><br>
+                ${buyerAddress}</p>
+            <p><strong>Estimated Delivery Date:</strong> ${estimatedDeliveryDate}</p>
+        </div>
+        <p>If you have any questions about your order, please don't hesitate to contact us.</p>
+        <p>Thank you for shopping with us!</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Anon.com All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

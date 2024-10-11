@@ -51,8 +51,33 @@ public class ShoppingCartService {
         return shoppingCartRepository.save(newCart);
     }
 
+//    @Transactional
+//    public CartItem addItemToCart(Long cartId, Long productId, Integer quantity) {
+//        ShoppingCart cart = shoppingCartRepository.findById(cartId)
+//                .orElseThrow(() -> new ResourceNotFoundException("ShoppingCart", "ID", cartId.toString()));
+//
+//        Product product = productRepository.findById(productId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Product", "ID", productId.toString()));
+//
+//        Optional<CartItem> existingItem = cart.getItems().stream()
+//                .filter(item -> item.getProduct().getId().equals(productId))
+//                .findFirst();
+//
+//        if (existingItem.isPresent()) {
+//            throw new DuplicateProductException(productId.toString());
+//        } else {
+//            CartItem newItem = new CartItem();
+//            newItem.setProduct(product);
+//            newItem.setShoppingCart(cart);
+//            newItem.setQuantity(quantity);
+//            newItem.setPrice(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
+//            cart.getItems().add(newItem);
+//            return cartItemRepository.save(newItem);
+//        }
+//    }
+
     @Transactional
-    public CartItem addItemToCart(Long cartId, Long productId, Integer quantity) {
+    public boolean addItemToCart(Long cartId, Long productId, Integer quantity) {
         ShoppingCart cart = shoppingCartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("ShoppingCart", "ID", cartId.toString()));
 
@@ -72,9 +97,11 @@ public class ShoppingCartService {
             newItem.setQuantity(quantity);
             newItem.setPrice(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
             cart.getItems().add(newItem);
-            return cartItemRepository.save(newItem);
+            cartItemRepository.save(newItem);
+            return true; // Item added successfully
         }
     }
+
 
     @Transactional
     public void removeItemFromCart(Long cartId, Long itemId) {

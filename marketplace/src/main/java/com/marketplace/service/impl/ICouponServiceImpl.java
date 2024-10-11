@@ -50,7 +50,9 @@ public class ICouponServiceImpl implements ICouponService {
         try {
             Coupon savedCoupon = couponRepository.save(coupon);
             logger.info("Coupon created successfully: {}", savedCoupon.getCode());
-            return couponMapper.toDto(savedCoupon);
+            CouponDto couponDtoReturn = couponMapper.toDto(savedCoupon);
+            couponDtoReturn.setSellerId(savedCoupon.getSeller().getId());
+            return couponDtoReturn;
         } catch (Exception e) {
             logger.error("Error occurred while creating coupon: ", e);
             throw new CouponCreationException("Failed to create coupon");

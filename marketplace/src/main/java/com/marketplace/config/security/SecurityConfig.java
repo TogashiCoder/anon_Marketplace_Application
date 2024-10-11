@@ -70,6 +70,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/orders/**").permitAll()
                                 .requestMatchers("/api/ordersConfirmation/**").permitAll()
                                 .requestMatchers("/api/product-stock/**").permitAll()
+                                .requestMatchers("/api/display/rating/**").permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )

@@ -16,6 +16,7 @@ public interface IProductService {
     ResponseEntity<List<ProductDto>> getAllProductsByCategory(Long categoryId);
     ResponseEntity<List<ProductDto>> getAllProductsBySellerId(Long sellerId);
     ResponseEntity<List<ProductDto>> getAllProductsWithoutCoupon();
+    ResponseEntity<Integer> getProductCountByCategory(Long categoryId);
 
 }
 

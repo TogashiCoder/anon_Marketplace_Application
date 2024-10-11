@@ -8,11 +8,13 @@ import com.marketplace.exception.EmptyCartException;
 import com.marketplace.exception.ResourceNotFoundException;
 import com.marketplace.model.*;
 import com.marketplace.service.IOrderService;
+import com.marketplace.service.email.EmailService;
 import com.marketplace.service.impl.ShoppingCartService;
 import com.marketplace.service.paymentService.PaypalService;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,6 +36,7 @@ public class ShoppingCartController {
     private final ShoppingCartService shoppingCartService;
     private final PaypalService paypalService;
     private final IOrderService orderService;
+    private final EmailService emailService;
 
     // Get or create a shopping cart for a buyer
     @GetMapping("/buyer/{buyerId}")
@@ -43,14 +46,24 @@ public class ShoppingCartController {
     }
 
     // Add an item to the cart
+//    @PostMapping("/{cartId}/add-item/{productId}/{quantity}")
+//    public ResponseEntity<CartItem> addItemToCart(
+//            @PathVariable Long cartId,
+//            @PathVariable Long productId,
+//            @PathVariable Integer quantity) {
+//        CartItem cartItem = shoppingCartService.addItemToCart(cartId, productId, quantity);
+//        return ResponseEntity.ok(cartItem);
+//    }
+
     @PostMapping("/{cartId}/add-item/{productId}/{quantity}")
-    public ResponseEntity<CartItem> addItemToCart(
+    public ResponseEntity<Boolean> addItemToCart(
             @PathVariable Long cartId,
             @PathVariable Long productId,
             @PathVariable Integer quantity) {
-        CartItem cartItem = shoppingCartService.addItemToCart(cartId, productId, quantity);
-        return ResponseEntity.ok(cartItem);
+        boolean added = shoppingCartService.addItemToCart(cartId, productId, quantity);
+        return ResponseEntity.ok(added);
     }
+
 
     // Remove an item from the cart
     @DeleteMapping("/{cartId}/remove-item/{itemId}")
@@ -124,8 +137,8 @@ public class ShoppingCartController {
 
             // Create and set ShipmentDetails
             ShipmentDetails shipmentDetails = new ShipmentDetails();
-            shipmentDetails.setCarrierName("Default Carrier");
-            shipmentDetails.setTrackingNumber("TBD");
+            shipmentDetails.setCarrierName("DHL");
+            shipmentDetails.setTrackingNumber("ANONTrackingNumber198");
             shipmentDetails.setShipmentDate(LocalDateTime.now());
             shipmentDetails.setEstimatedDeliveryDate(LocalDateTime.now().plusDays(7));
             order.setShipmentDetails(shipmentDetails);
@@ -139,7 +152,30 @@ public class ShoppingCartController {
             // Save the order
             order = orderService.saveOrder(order);
 
+
+            //becarfure
+            // Reduce product quantities based on cart items
+            for (CartItem cartItem : cart.getItems()) {
+                Product product = cartItem.getProduct();
+                if (product.getStockQuantity() < cartItem.getQuantity()) {
+                    throw new IllegalArgumentException("Not enough stock for product: " + product.getName());
+                }
+                product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
+            }
+            //carfule
+
             BigDecimal totalAmount = order.getTotalPrice();
+
+
+
+            // Send order confirmation email
+            try {
+                emailService.sendOrderConfirmationEmail(order);
+            } catch (MessagingException e) {
+                // Log the error, but don't stop the checkout process
+                System.err.println("Failed to send order confirmation email: " + e.getMessage());
+            }
+
 
             // Prepare PayPal payment
             String cancelUrl = "http://localhost:8080/api/cart/payment/cancel";
@@ -203,11 +239,18 @@ public class ShoppingCartController {
         return orderItem;
     }
 
+//    private BigDecimal calculateOrderTotal(ShoppingCart cart) {
+//        return cart.getItems().stream()
+//                .map(cartItem -> cartItem.getProduct().getPrice().multiply(new BigDecimal(cartItem.getQuantity())))
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//    }
+
     private BigDecimal calculateOrderTotal(ShoppingCart cart) {
         return cart.getItems().stream()
                 .map(cartItem -> cartItem.getProduct().getPrice().multiply(new BigDecimal(cartItem.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
 
 
     // Retrieve cart ID by buyer ID

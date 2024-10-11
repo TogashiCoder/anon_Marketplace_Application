@@ -1,9 +1,12 @@
 package com.marketplace.service.impl;
 
 import com.marketplace.enums.OrderStatus;
+import com.marketplace.exception.ResourceNotFoundException;
 import com.marketplace.model.*;
 import com.marketplace.repository.OrderRepository;
+import com.marketplace.repository.SellerRepository;
 import com.marketplace.repository.ShoppingCartRepository;
+import com.marketplace.repository.UserRepository;
 import com.marketplace.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,11 @@ public class OrderServiceImpl implements IOrderService {
 
     @Autowired
     private ShoppingCartService shoppingCartService;
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private SellerRepository sellerRepository;
 
     // Create an order based on the shopping cart
     @Override
@@ -211,6 +219,22 @@ public class OrderServiceImpl implements IOrderService {
         return buyerOrders.stream()
                 .flatMap(order -> order.getOrderItems().stream())
                 .anyMatch(orderItem -> orderItem.getProduct().getId().equals(productId));
+    }
+
+    @Override
+    public Integer getTotalOrderNumberForSeller(Long sellerId) {
+        // Check if the seller exists
+        Seller seller = sellerRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller","id",sellerId.toString()));
+
+        List<Order> allOrders = orderRepository.findAll();
+
+        int totalOrders = (int) allOrders.stream()
+                .filter(order -> order.getOrderItems().stream()
+                        .anyMatch(item -> item.getSeller().getId().equals(sellerId)))
+                .count();
+
+        return totalOrders;
     }
 
 

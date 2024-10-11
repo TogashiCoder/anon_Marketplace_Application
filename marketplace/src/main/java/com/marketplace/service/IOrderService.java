@@ -34,4 +34,8 @@ public interface IOrderService {
     boolean hasBuyerPurchasedProduct(Long buyerId, Long productId);
 
 
+
+    Integer getTotalOrderNumberForSeller(Long sellerId);
+
+
 }

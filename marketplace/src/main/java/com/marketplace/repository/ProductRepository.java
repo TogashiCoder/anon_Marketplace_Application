@@ -17,6 +17,7 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
     List<Product> findBySellerId(Long sellerId);
     List<Product> findByCouponIsNull();
     List<Product> findByCoupon(Coupon coupon);
+    int countByCategoryId(Long categoryId);
 
 
     Page<Product> findAll(Pageable pageable);
